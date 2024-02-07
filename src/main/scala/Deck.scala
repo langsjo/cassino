@@ -37,13 +37,7 @@ object Deck:
   override def toString: String =
     var repr = ""
     for card <- this.cards do
-      val name = card.tableValue match
-        case 1 => "Ace"
-        case 11 => "Jack"
-        case 12 => "Queen"
-        case 13 => "King"
-        case _ => s"${card.tableValue}"
-      repr += s"${name} of ${card.suit}s, "
+      repr += s"${card}, "
 
     repr.dropRight(2)
 
