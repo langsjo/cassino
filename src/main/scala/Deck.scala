@@ -1,11 +1,11 @@
 package joo
 
 import scala.util.Random
-import scala.collection.mutable.Buffer
+import scala.collection.mutable.Stack
 
 object Deck:
   //Buffer that stores cards in the deck
-  private var cards = Buffer[Card]()
+  private var cards = Stack[Card]()
   this.shuffle()
 
   //Used to initialize deck and reshuffle for new rounds
@@ -20,18 +20,16 @@ object Deck:
       faceValue <- 1 to 13
     do
       (suit, faceValue) match //Special cards get their special values
-        case (Suit.Spade, 2) => this.cards += Card(suit, faceValue, 15) //2 of Spades
-        case (Suit.Diamond, 10) => this.cards += Card(suit, faceValue, 16) //10 of Diamonds
-        case (_, 1) => this.cards += Card(suit, faceValue, 14) //Aces
-        case _ => this.cards += Card(suit, faceValue, faceValue) //Other cards
+        case (Suit.Spade, 2) => this.cards.push(Card(suit, faceValue, 15)) //2 of Spades
+        case (Suit.Diamond, 10) => this.cards.push(Card(suit, faceValue, 16)) //10 of Diamonds
+        case (_, 1) => this.cards.push(Card(suit, faceValue, 14)) //Aces
+        case _ => this.cards.push(Card(suit, faceValue, faceValue)) //Other cards
 
     this.cards = Random.shuffle(this.cards) //Shuffle the cards into a random order
 
   //Remove the first card in the buffer and return it
   def takeCard(): Card =
-    val cardTaken = this.cards.head
-    this.cards = this.cards.tail
-    cardTaken
+    this.cards.pop
 
   //Represents the deck as a string
   override def toString: String =
