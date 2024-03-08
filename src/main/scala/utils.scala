@@ -48,6 +48,41 @@ def combineCombinations(madeCombos: Set[Set[Card]], originalCombos: Set[Set[Card
 
   newCombos ++ originalCombos //add the original single combinations, Set removes duplicates.
 
+final case class WrongCardException(private val message: String = "Card written wrong.", private val cause: Throwable = None.orNull) extends Exception(message, cause)
+
+
+def cardReprToCard(repr: String): Card =
+  if repr.length != 2 then
+    throw WrongCardException()
+
+  else
+    val value = repr(0) match
+      case num: Char if num.toInt >= 1 && num.toInt <= 9 =>
+        num.toInt
+
+      case char: Char =>
+        if char == 'T' then 10
+        else if char == 'J' then 11
+        else if char == 'Q' then 12
+        else if char == 'K' then 13
+        else throw WrongCardException()
+
+      case _ => throw WrongCardException()
+
+    val suit = repr(1) match
+      case char: Char =>
+        if char == 'S' then Suit.Spade
+        else if char == 'C' then Suit.Club
+        else if char == 'H' then Suit.Heart
+        else if char == 'D' then Suit.Diamond
+        else
+          throw WrongCardException()
+
+      case _ =>
+        throw WrongCardException()
+
+    Card(suit, value)
+
 
 @main def tester(): Unit =
   val a = Deck(1)
