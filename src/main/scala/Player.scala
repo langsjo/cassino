@@ -34,7 +34,8 @@ class Player(val game: Game, val name: String):
     this.removeCardFromHand(card)
     this.game.addToTable(card)
 
-  //kantsii ehk kirjottaa uudellee
+  
+  //checks if move is legal by checking if it exists in all possible moves and then plays it if it is. returns false if illegal
   def playMove(playedCard: Card, chosenCards: Set[Card]): Boolean =
     if this.allPossibleMoves.contains(playedCard) && this.allPossibleMoves(playedCard).contains(chosenCards) then
       this.game.takeFromTable(chosenCards)
@@ -46,6 +47,7 @@ class Player(val game: Game, val name: String):
     else
       false
 
+  //sets the allPossibleMoves variable to have all possible moves that can be made by this player. Should be called every time it's this players turn
   def setAllPossibleMoves(): Unit =
     this.allPossibleMoves = Map[Card, Set[Set[Card]]]()
     for card <- this.hand do
