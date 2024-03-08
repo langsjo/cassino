@@ -26,11 +26,15 @@ class Player(val game: Game, val name: String):
 
   def clearHand(): Unit =
     this.hand.foreach( x => this.removeCardFromHand(x) )
-  
+
+  def has(card: Card): Boolean =
+    this.hand(card)
+
   def addCardToTable(card: Card): Unit =
     this.removeCardFromHand(card)
     this.game.addToTable(card)
 
+  //kantsii ehk kirjottaa uudellee
   def playMove(playedCard: Card, chosenCards: Set[Card]): Boolean =
     if this.allPossibleMoves.contains(playedCard) && this.allPossibleMoves(playedCard).contains(chosenCards) then
       this.game.takeFromTable(chosenCards)
@@ -49,3 +53,7 @@ class Player(val game: Game, val name: String):
       val allCombos = combineCombinations(singleCombos, singleCombos)
       if allCombos.nonEmpty then
         this.allPossibleMoves += (card, allCombos)
+
+  override def toString: String = this.name
+
+  def getHand: String = this.hand.mkString(", ")

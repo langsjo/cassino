@@ -1,16 +1,20 @@
 package joo
 import scala.collection.mutable.{Buffer, Set, Map}
 
-class Game():
+class Game(deckCount: Int):
   val players = Buffer[Player]()
-  val deck = Deck(1)
-  var dealerCount = this.players.size - 1
+  val deck = Deck(deckCount)
+  var dealerCount = (this.players.size) - 1
   var turnCount = this.dealerCount //this starts first round with first Player in players with the first turn, then cycles the first turn
   val table = Set[Card]()
+  var roundNumber = 0
   var lastCardTaker: Option[Player] = None
 
   def addPlayer(player: Player): Unit =
     this.players += player
+
+  def addPlayers(players: Seq[Player]): Unit =
+    this.players ++= players
 
   def addToTable(card: Card): Unit =
     this.table += card
@@ -21,10 +25,16 @@ class Game():
   def takeFromTable(cards: Set[Card]): Unit =
     this.table --= cards
 
+  def getTable: String = this.table.mkString(", ")
+  
+  def tableHas(card: Card): Boolean =
+    this.table(card)
+
+
   def clearTable(): Unit =
     this.takeFromTable(this.table)
 
-  def dealer: Player = this.players(this.dealerCount - 1 % this.players.size)
+  def currentDealer: Player = this.players((this.dealerCount - 1) % this.players.size)
 
   def currentPlayer: Player = this.players(this.turnCount % this.players.size)
 
@@ -86,7 +96,8 @@ class Game():
     this.addPoints(this.calculatePoints())
 
   def newRound(): Unit =
-    this.dealerCount += 1
+    this.roundNumber += 1
+    this.dealerCount = (this.players.size + this.roundNumber)
     this.turnCount = this.dealerCount
 
     this.deck.shuffle()
