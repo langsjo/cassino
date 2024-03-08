@@ -1,0 +1,95 @@
+package joo
+import scala.collection.mutable.{Buffer, Set, Map}
+
+class Game():
+  val players = Buffer[Player]()
+  val deck = Deck(1)
+  var dealerCount = this.players.size - 1
+  var turnCount = this.dealerCount //this starts first round with first Player in players with the first turn, then cycles the first turn
+  val table = Set[Card]()
+  var lastCardTaker: Option[Player] = None
+
+  def addPlayer(player: Player): Unit =
+    this.players += player
+
+  def addToTable(card: Card): Unit =
+    this.table += card
+
+  def takeFromTable(card: Card): Unit =
+    this.table -= card
+
+  def takeFromTable(cards: Set[Card]): Unit =
+    this.table --= cards
+
+  def clearTable(): Unit =
+    this.takeFromTable(this.table)
+
+  def dealer: Player = this.players(this.dealerCount - 1 % this.players.size)
+
+  def currentPlayer: Player = this.players(this.turnCount % this.players.size)
+
+  def nextPlayer: Player = this.players((this.turnCount + 1) % this.players.size)
+
+  //returns vector of all players, starting with the one whose turn it is now and ending with the one
+  //whose turn it was last turn/whose turn is the farthest away in the order
+  def turnOrder: Vector[Player] = (this.players.drop(this.turnCount % this.players.size) ++
+    this.players.take(this.turnCount % this.players.size)).toVector
+
+  def newTurn(): Unit =
+    this.currentPlayer.drawCard()
+    this.turnCount += 1
+    this.currentPlayer.setAllPossibleMoves()
+
+  private def calculatePoints(): Map[Player, Int] =
+    val addedPoints = Map() ++ this.players.map( x => (x, 0) ).toMap
+
+    val mostCardsPlayer = this.players.maxBy( x => x.pile.size )
+    addedPoints(mostCardsPlayer) += 1
+
+    val mostSpadesPlayer = this.players.maxBy( x => x.pile.count( y => y.suit == Suit.Spade ) )
+    addedPoints(mostSpadesPlayer) += 2
+
+    for player <- this.players do
+      val sweeps = player.sweeps
+      val aceCount = player.pile.count( x => x.handValue == 14 )
+      val lillaCount = player.pile.count( x => x.handValue == 15 )
+      val tuuraCount = player.pile.count( x => x.handValue == 16 )
+
+      addedPoints(player) += sweeps * 1 + aceCount * 1 + lillaCount * 1 + tuuraCount * 2
+
+    addedPoints
+
+  private def addPoints(points: Map[Player, Int]): Unit =
+    for (player, addedPoints) <- points do
+      player.addPoints(addedPoints)
+
+  def dealStartingCards(): Unit =
+    for i <- 1 to 4 do
+      for player <- this.turnOrder do
+        player.drawCard()
+
+  def addStartingCardsToTable(): Unit =
+    for i <- 1 to 4 do
+      this.addToTable(this.deck.takeCard())
+
+  def endRound(): Unit =
+
+    this.players.foreach( x => x.clearHand() )
+
+    this.lastCardTaker match
+      case Some(player) =>
+        player.addToPile(this.table)
+        this.clearTable()
+      case None =>
+        this.clearTable()
+
+    this.addPoints(this.calculatePoints())
+
+  def newRound(): Unit =
+    this.dealerCount += 1
+    this.turnCount = this.dealerCount
+
+    this.deck.shuffle()
+    this.dealStartingCards()
+    this.addStartingCardsToTable()
+    this.currentPlayer.setAllPossibleMoves()
