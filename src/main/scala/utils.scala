@@ -2,7 +2,7 @@ package joo
 import scala.collection.mutable.{Buffer, Set}
 
 //Recursive function that returns all possible combinations to sum up to a specific value
-def possibleSingleCombinations(playedCardValue: Int, tableCards: Buffer[Card]): Set[Set[Card]] =
+def possibleSingleCombinations(playedCardValue: Int, tableCards: Set[Card]): Set[Set[Card]] =
   //Set used to remove duplicate combinations
   var possibilities = Set[Set[Card]]()
 
@@ -50,15 +50,16 @@ def combineCombinations(madeCombos: Set[Set[Card]], originalCombos: Set[Set[Card
 
 
 @main def tester(): Unit =
-  val hand = Buffer[Card]()
-  val table = Buffer[Card]()
+  val a = Deck(1)
+  val hand = Set[Card]()
+  val table = Set[Card]()
   for i <- 1 to 4 do
-    hand += Deck.takeCard()
+    hand += a.takeCard()
   //println(Deck)
   for i <- 1 to 7 do
-    table += Deck.takeCard()
+    table += a.takeCard()
   println(hand)
   println(table)
   for card <- hand.take(1) do
     println(possibleSingleCombinations(card.handValue, table))
-  println(combineCombinations(possibleSingleCombinations(hand(0).handValue, table), possibleSingleCombinations(hand(0).handValue, table)))
+  println(combineCombinations(possibleSingleCombinations(hand.head.handValue, table), possibleSingleCombinations(hand.head.handValue, table)))
