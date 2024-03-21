@@ -1,8 +1,8 @@
 package joo
-import scala.collection.mutable.{Set, Map}
+import scala.collection.mutable.{Set, Map, Buffer}
 
 class Player(val game: Game, val name: String):
-  val hand = Set[Card]()
+  val hand = Buffer[Card]()
   val pile = Set[Card]()
   var sweeps = 0
   var points = 0
@@ -28,11 +28,15 @@ class Player(val game: Game, val name: String):
     this.hand.foreach( x => this.removeCardFromHand(x) )
 
   def has(card: Card): Boolean =
-    this.hand(card)
+    this.hand.contains(card)
 
-  def addCardToTable(card: Card): Unit =
-    this.removeCardFromHand(card)
-    this.game.addToTable(card)
+  def addCardToTable(card: Card): Boolean =
+    if this.hand.contains(card) then
+      this.removeCardFromHand(card)
+      this.game.addToTable(card)
+      true
+    else
+      false
 
   
   //checks if move is legal by checking if it exists in all possible moves and then plays it if it is. returns false if illegal
@@ -40,6 +44,7 @@ class Player(val game: Game, val name: String):
     if this.allPossibleMoves.contains(playedCard) && this.allPossibleMoves(playedCard).contains(chosenCards) then
       this.game.takeFromTable(chosenCards)
       this.addToPile(chosenCards + playedCard)
+      this.removeCardFromHand(playedCard)
       if game.table.isEmpty then
         this.sweeps += 1
       true
@@ -51,7 +56,7 @@ class Player(val game: Game, val name: String):
   def setAllPossibleMoves(): Unit =
     this.allPossibleMoves = Map[Card, Set[Set[Card]]]()
     for card <- this.hand do
-      val singleCombos = possibleSingleCombinations(card.handValue, this.game.table)
+      val singleCombos = possibleSingleCombinations(card.handValue, Set[Card]() ++ this.game.table)
       val allCombos = combineCombinations(singleCombos, singleCombos)
       if allCombos.nonEmpty then
         this.allPossibleMoves += (card, allCombos)

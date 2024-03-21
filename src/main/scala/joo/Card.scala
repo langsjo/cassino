@@ -34,7 +34,7 @@ case class Card(val suit: Suit, val tableValue: Int):
 
   def toRepr: String =
     val value = this.tableValue match
-      case num if num >= 1 && num <= 9 => num.toChar
+      case num if num >= 1 && num <= 9 => num.toString.toCharArray.head
       case char if char == 10 => 'T'
       case char if char == 11 => 'J'
       case char if char == 12 => 'Q'

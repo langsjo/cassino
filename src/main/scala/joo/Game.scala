@@ -4,9 +4,9 @@ import scala.collection.mutable.{Buffer, Set, Map}
 class Game(deckCount: Int):
   val players = Buffer[Player]()
   val deck = Deck(deckCount)
-  var dealerCount = (this.players.size) - 1
+  var dealerCount = 1
   var turnCount = this.dealerCount //this starts first round with first Player in players with the first turn, then cycles the first turn
-  val table = Set[Card]()
+  val table = Buffer[Card]()
   var roundNumber = 0
   var lastCardTaker: Option[Player] = None
 
@@ -28,7 +28,7 @@ class Game(deckCount: Int):
   def getTable: String = this.table.mkString(", ")
   
   def tableHas(card: Card): Boolean =
-    this.table(card)
+    this.table.contains(card)
 
   def clearTable(): Unit =
     this.table.clear()
@@ -94,7 +94,7 @@ class Game(deckCount: Int):
     this.players.foreach( x => x.clearHand() )
     this.lastCardTaker match
       case Some(player) =>
-        player.addToPile(this.table)
+        player.addToPile(Set[Card]() ++ this.table)
         this.clearTable()
       case None =>
         this.clearTable()
@@ -107,7 +107,7 @@ class Game(deckCount: Int):
   //shuffling the deck, dealing everyone 4 cards, putting 4 cards on the table and calling setAllPossibleMoves on player whose turn it is to start
   def newRound(): Unit =
     this.roundNumber += 1
-    this.dealerCount = (this.players.size + this.roundNumber)
+    this.dealerCount = (this.players.size + this.roundNumber - 1)
     this.turnCount = this.dealerCount
 
     this.deck.shuffle()
