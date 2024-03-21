@@ -57,8 +57,8 @@ def cardReprToCard(repr: String): Card =
 
   else
     val value = repr(0) match
-      case num: Char if num.toInt >= 1 && num.toInt <= 9 =>
-        num.toInt
+      case num: Char if num.isDigit && num.asDigit >= 1 && num.asDigit <= 9 =>
+        num.asDigit
 
       case char: Char =>
         if char == 'T' then 10
@@ -85,7 +85,7 @@ def cardReprToCard(repr: String): Card =
 
 
 @main def tester(): Unit =
-  val a = Deck(1)
+  /*val a = Deck(1)
   val hand = Set[Card]()
   val table = Set[Card]()
   for i <- 1 to 4 do
@@ -98,3 +98,10 @@ def cardReprToCard(repr: String): Card =
   for card <- hand.take(1) do
     println(possibleSingleCombinations(card.handValue, table))
   println(combineCombinations(possibleSingleCombinations(hand.head.handValue, table), possibleSingleCombinations(hand.head.handValue, table)))
+  */
+  //val num = '9'
+  //println(num.isDigit && num.toString.toInt >= 1 && num.toString.toInt <= 9)
+  println(cardReprToCard("TH"))
+  println(cardReprToCard("JD"))
+  println(cardReprToCard("QS"))
+  println(cardReprToCard("KC"))
