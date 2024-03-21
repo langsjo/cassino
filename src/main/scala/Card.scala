@@ -23,14 +23,31 @@ case class Card(val suit: Suit, val tableValue: Int):
         
      s"${name} of ${this.suit}s"
 
+  /*
   override def equals(other: Any) =
     other match
       case c: Card =>
         this.suit == c.suit && this.tableValue == c.tableValue
       case _ => 
         false
+*/
+
+  def toRepr: String =
+    val value = this.tableValue match
+      case num if num >= 1 && num <= 9 => num.toChar
+      case char if char == 10 => 'T'
+      case char if char == 11 => 'J'
+      case char if char == 12 => 'Q'
+      case char if char == 13 => 'K'
+
+    val suit = this.suit match
+      case x if x == Suit.Heart => 'H'
+      case x if x == Suit.Diamond => 'D'
+      case x if x == Suit.Spade => 'S'
+      case x if x == Suit.Club => 'C'
 
 
+    s"$value$suit"
 
 
 //Suit objects for checking suit of cards
