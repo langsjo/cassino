@@ -13,7 +13,11 @@ class Player(val game: Game, val name: String):
     this.points += addedPoints
 
   def drawCard(): Unit =
-    this.hand += game.deck.takeCard()
+    val card = game.deck.takeCard()
+    card match
+      case Some(c) =>
+        this.hand += c
+      case None =>
 
   def addToPile(card: Card): Unit =
     this.pile += card
@@ -45,6 +49,7 @@ class Player(val game: Game, val name: String):
       this.game.takeFromTable(chosenCards)
       this.addToPile(chosenCards + playedCard)
       this.removeCardFromHand(playedCard)
+      this.game.setLastCardTaker(this)
       if game.table.isEmpty then
         this.sweeps += 1
       true

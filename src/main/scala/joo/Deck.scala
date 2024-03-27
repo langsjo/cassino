@@ -25,9 +25,15 @@ class Deck(val numberOfDecks: Int):
     this.cards = Random.shuffle(this.cards) //Shuffle the cards into a random order
 
   //Remove the first card in the buffer and return it
-  def takeCard(): Card =
-    this.cards.pop
+  def takeCard(): Option[Card] =
+    if this.cards.nonEmpty then
+      Some(this.cards.pop())
 
+    else
+      None
+  
+  def cardsLeft: Int = this.cards.size
+  
   //Represents the deck as a string
   override def toString: String =
     var repr = ""

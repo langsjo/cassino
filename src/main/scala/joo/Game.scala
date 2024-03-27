@@ -9,6 +9,16 @@ class Game(deckCount: Int):
   val table = Buffer[Card]()
   var roundNumber = 0
   var lastCardTaker: Option[Player] = None
+  var roundEnded: Boolean = false
+
+  //if all players are out of cards, the round is over
+  def isRoundOver: Boolean = this.players.count( x => x.hand.nonEmpty ) == 0
+  
+  def setLastCardTaker(player: Player): Unit =
+    this.lastCardTaker = Some(player)
+    
+  def setRoundEndedFalse(): Unit =
+    this.roundEnded = false
 
   def addPlayer(player: Player): Unit =
     this.players += player
@@ -46,10 +56,6 @@ class Game(deckCount: Int):
 
   //draws the player of the last turn a card as well as giving the turn to the next player.
   //calls setAllPossibleMoves for next player
-  def newTurn(): Unit =
-    this.currentPlayer.drawCard()
-    this.turnCount += 1
-    this.currentPlayer.setAllPossibleMoves()
 
   //calculates the points each player should get once the round has ended and returns it in a map, used by addPoints
   private def calculatePoints(): Map[Player, Int] =
@@ -84,7 +90,12 @@ class Game(deckCount: Int):
 
   def addStartingCardsToTable(): Unit =
     for i <- 1 to 4 do
-      this.addToTable(this.deck.takeCard())
+      val card = this.deck.takeCard()
+      card match
+        case Some(c) =>
+          this.addToTable(c)
+        case None =>
+
 
   //ends the round by:
   //clearing each players hands (shouldn't have any cards anyway, just in case)
@@ -98,13 +109,14 @@ class Game(deckCount: Int):
         this.clearTable()
       case None =>
         this.clearTable()
-
+    this.roundEnded = true
     this.addPoints(this.calculatePoints())
 
   //starts a new round by:
   //incrementing the roundNumber and dealerCount
   //setting the turnCount variable so that the dealer gets their turn last
   //shuffling the deck, dealing everyone 4 cards, putting 4 cards on the table and calling setAllPossibleMoves on player whose turn it is to start
+  //should be called at the start of a new game
   def newRound(): Unit =
     this.roundNumber += 1
     this.dealerCount = (this.players.size + this.roundNumber - 1)
@@ -114,3 +126,14 @@ class Game(deckCount: Int):
     this.dealStartingCards()
     this.addStartingCardsToTable()
     this.currentPlayer.setAllPossibleMoves()
+
+  def newTurn(): Unit =
+    this.currentPlayer.drawCard()
+    this.turnCount += 1
+    this.currentPlayer.setAllPossibleMoves()
+    
+    if this.isRoundOver then 
+      this.endRound()
+      this.newRound()
+
+
