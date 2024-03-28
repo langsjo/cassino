@@ -2,9 +2,14 @@ Bot scoring tested with no possible moves - works
 Bot scoring tested overall - works
 Bot choosing move when no legal moves (other than putting card on table) - works
 Bot choosing move with less than 4 legal moves - works
+Bots choose moves based on their difficulty - works
 
 Combination finding with no cards on table - works
 Combination finding overall - works
 
 Making illegal moves doesn't let you - works
 Putting card on table without selecting card doesn't let you - works
+
+Tested round ending/new one starting - works
+Tested point alert - works
+Tested alert for when bot makes a move - works

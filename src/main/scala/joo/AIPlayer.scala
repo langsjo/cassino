@@ -27,7 +27,7 @@ class AIPlayer(override val game: Game, override val name: String, val difficult
   // if there are no possible moves, select the worst card in the bot's hand and put it on the table.
   private def selectMove: (Card, Set[Card]) =
     val scoredMoves = this.scoreMoves.sortBy( (x, y) => y ).map( (x, y) => x ).toVector
-    println(scoredMoves)
+    //println(scoredMoves)
     if scoredMoves.size >= 4 then
       val groupedMoves = this.groupMoves(scoredMoves, 4)
       //println(groupedMoves)
@@ -101,9 +101,8 @@ class AIPlayer(override val game: Game, override val name: String, val difficult
 
   // finds the worst card in the bots hand, used for selecting a card to put on the table.
   private def worstCardInHand: Card =
-    //score cards, then sort by their score and then by value in hand. Choose the card with lowest score and hand value.
-    val scoredCards = this.hand.map( x => (x, this.scoreCard(x)) ).sortBy( (x, y) => (y, x.handValue ) )
-    scoredCards.head._1
+    //score cards, then take min by their score and then by value in hand. Choose the card with lowest score and hand value.
+    this.hand.map( x => (x, this.scoreCard(x)) ).minBy( (x, y) => (y, x.handValue ) )._1
 
 
 

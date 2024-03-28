@@ -29,7 +29,18 @@ class Player(val game: Game, val name: String):
     this.hand -= card
 
   def clearHand(): Unit =
-    this.hand.foreach( x => this.removeCardFromHand(x) )
+    this.hand.clear()
+
+  def clearPile(): Unit =
+    this.pile.clear()
+
+  def clearSweeps(): Unit =
+    this.sweeps = 0
+
+  def resetState(): Unit =
+    this.clearHand()
+    this.clearPile()
+    this.clearSweeps()
 
   def has(card: Card): Boolean =
     this.hand.contains(card)

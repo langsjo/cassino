@@ -22,6 +22,13 @@ case class Card(val suit: Suit, val tableValue: Int):
         case _ => s"${this.tableValue}"
         
      s"${name} of ${this.suit}s"
+  
+  def pointCount: Int =
+    this.handValue match
+      case 14 => 1
+      case 15 => 1
+      case 16 => 2
+      case _ => 0
 
   /*
   override def equals(other: Any) =
