@@ -18,3 +18,7 @@ tallennus, menu ja pisteiden näyttäminen sekä pelin voittajan määrittämine
 
 
 siirrä eri skenet omaan objektiin
+
+27.3-???
+
+Mitä tehdä tasapelissä?

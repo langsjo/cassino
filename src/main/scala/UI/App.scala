@@ -1,6 +1,6 @@
 package UI
 
-import joo.{Card, Game, Player, Suit}
+import joo.{AIPlayer, Card, Game, Player, Suit}
 import scalafx.application.JFXApp3
 import scalafx.geometry.{Insets, Pos}
 import scalafx.scene.{Group, Scene}
@@ -21,7 +21,7 @@ object Main extends JFXApp3:
 
   val game = Game(1)
   val player1 = Player(game, "Player 1")
-  val player2 = Player(game, "Player 2")
+  val player2 = AIPlayer(game, "Player 2", 3)
 
   game.addPlayer(player1)
   game.addPlayer(player2)
@@ -30,11 +30,12 @@ object Main extends JFXApp3:
   def start() =
     stage = new JFXApp3.PrimaryStage:
       title = "UniqueProjectName"
+      
       width = 850
       height = 700
 
-    stage.setMinWidth(850)
-    stage.setMinHeight(700)
+    stage.setMinWidth(stage.getWidth)
+    stage.setMinHeight(stage.getHeight)
 
     stage.scene = GameView(game)
 

@@ -11,9 +11,14 @@ class Game(deckCount: Int):
   var lastCardTaker: Option[Player] = None
   var roundEnded: Boolean = false
 
+  
+  def leadingPlayer: Player = this.players.maxBy( x => x.points )
+  
   //if all players are out of cards, the round is over
   def isRoundOver: Boolean = this.players.count( x => x.hand.nonEmpty ) == 0
-  
+
+  def isGameOver: Boolean = this.players.count( x => x.points >= 16 ) >= 1
+
   def setLastCardTaker(player: Player): Unit =
     this.lastCardTaker = Some(player)
     
@@ -102,7 +107,7 @@ class Game(deckCount: Int):
   //gives the last card taker (if they exist) all the remaining cards on the table
   //and adds the earned points to the players
   def endRound(): Unit =
-    this.players.foreach( x => x.clearHand() )
+    this.players.foreach( x => x.resetState() )
     this.lastCardTaker match
       case Some(player) =>
         player.addToPile(Set[Card]() ++ this.table)
