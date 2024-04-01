@@ -18,26 +18,16 @@ import java.io.FileInputStream
 
 
 object Main extends JFXApp3:
-
-  val game = Game(1)
-  val player1 = Player(game, "Player 1")
-  val player2 = AIPlayer(game, "Player 2", 3)
-
-  game.addPlayer(player1)
-  game.addPlayer(player2)
-  game.newRound()
-
   def start() =
+
     stage = new JFXApp3.PrimaryStage:
       title = "UniqueProjectName"
-      
       width = 850
       height = 700
-
     stage.setMinWidth(stage.getWidth)
     stage.setMinHeight(stage.getHeight)
 
-    stage.scene = GameView(game)
+    stage.scene = Menu.scene
 
 
   end start
