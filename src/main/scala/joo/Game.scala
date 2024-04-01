@@ -28,7 +28,7 @@ class Game(deckCount: Int):
   def addPlayer(player: Player): Unit =
     this.players += player
 
-  def addPlayers(players: Seq[Player]): Unit =
+  def addPlayers[C <: Seq[Player]](players: C): Unit =
     this.players ++= players
 
   def addToTable(card: Card): Unit =
@@ -59,8 +59,20 @@ class Game(deckCount: Int):
   def turnOrder: Vector[Player] = (this.players.drop(this.turnCount % this.players.size) ++
     this.players.take(this.turnCount % this.players.size)).toVector
 
-  //draws the player of the last turn a card as well as giving the turn to the next player.
-  //calls setAllPossibleMoves for next player
+  //find next human to play in turn order
+  def nextHumanPlayer: Option[Player] = 
+    this.turnOrder.find {
+    case bot: AIPlayer => false
+    case human: Player => true
+    }
+  
+  //find next AI to play, excluding one that may be currently in turn
+  def nextAIPlayer: Option[Player] =
+    this.turnOrder.tail.find {
+      case bot: AIPlayer => true
+      case _ => false
+    }
+
 
   //calculates the points each player should get once the round has ended and returns it in a map, used by addPoints
   private def calculatePoints(): Map[Player, Int] =
@@ -107,7 +119,6 @@ class Game(deckCount: Int):
   //gives the last card taker (if they exist) all the remaining cards on the table
   //and adds the earned points to the players
   def endRound(): Unit =
-    this.players.foreach( x => x.resetState() )
     this.lastCardTaker match
       case Some(player) =>
         player.addToPile(Set[Card]() ++ this.table)
@@ -116,6 +127,7 @@ class Game(deckCount: Int):
         this.clearTable()
     this.roundEnded = true
     this.addPoints(this.calculatePoints())
+    this.players.foreach( x => x.resetState() )
 
   //starts a new round by:
   //incrementing the roundNumber and dealerCount
@@ -132,6 +144,10 @@ class Game(deckCount: Int):
     this.addStartingCardsToTable()
     this.currentPlayer.setAllPossibleMoves()
 
+
+  //draws the player of the last turn a card as well as giving the turn to the next player.
+  //calls setAllPossibleMoves for next player
+  //checks if round is over, if so end it and start a new one.
   def newTurn(): Unit =
     this.currentPlayer.drawCard()
     this.turnCount += 1

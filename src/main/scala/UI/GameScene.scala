@@ -35,7 +35,7 @@ class GameScene(val game: Game, val stage: JFXApp3.PrimaryStage, val stackPane: 
                 "-fx-faint-focus-radius: 0px;" +
                 s"-fx-faint-focus-color: transparent;"
 
-        this.getStylesheets.add(getClass.getResource("style.css").toExternalForm)
+        this.getStylesheets.add(getClass.getResource("gamescene.css").toExternalForm)
 
   //returns a togglebutton with image of card on it that can be toggled on/off
   //used for the cards in the players hand. has a togglegroup so only one can be selected at a time
@@ -53,7 +53,7 @@ class GameScene(val game: Game, val stage: JFXApp3.PrimaryStage, val stackPane: 
               "-fx-faint-focus-radius: 0px;" +
               "-fx-faint-focus-color: transparent;"
 
-      this.getStylesheets.add(getClass.getResource("style.css").toExternalForm)
+      this.getStylesheets.add(getClass.getResource("gamescene.css").toExternalForm)
 
   //returns image of the back of a card, used for the cards in enemy players hand
   def getBackCard: ImageView =
@@ -93,6 +93,13 @@ class GameScene(val game: Game, val stage: JFXApp3.PrimaryStage, val stackPane: 
 
     label
 
+  //return label with specified text and fontsize
+  def getTextLabel(text: String, fontSize: Int): Label =
+    new Label(text):
+      font = Font.font("Times New Roman", FontWeight.Bold, fontSize)
+      //alignment = Pos.BottomLeft
+      textFill = White
+
   //returns an alert for an AIPlayer playing a move
   def getPlayMoveAlert(player: Player, playedCard: Card, chosenCards: Set[Card]): Alert =
     new Alert(AlertType.Information):
@@ -103,7 +110,7 @@ class GameScene(val game: Game, val stage: JFXApp3.PrimaryStage, val stackPane: 
 
       if chosenCards.nonEmpty then //is chosenCards not empty, AI made a move (didnt put card on table)
         title = s"${player.name} made a move!"
-        
+
         //content is playedcard, arrow, chosencards
         val content = Array(getCardImage(playedCard, cardHeight), getArrowImage(cardHeight)) ++
           chosenCards.map( x => getCardImage(x, cardHeight) ).toArray
@@ -113,15 +120,15 @@ class GameScene(val game: Game, val stage: JFXApp3.PrimaryStage, val stackPane: 
         val tableLabel = new Label("Table"):
           font = Font.font("Times New Roman", FontWeight.Bold, 40)
           translateY = 25 //move label down a bit so it's centered
-          
+
         //content is card that goes on table, arrow, label with text "Table"
         val content = Array[Node](getCardImage(playedCard, cardHeight), getArrowImage(cardHeight), tableLabel)
         cardHBox.children = content
 
       graphic = cardHBox
-      
+
       //makes the alert be as small as possible (not 1 pixel wide, it is the width of the contents + the OK button)
-      dialogPane.getValue.setMaxWidth(1) 
+      dialogPane.getValue.setMaxWidth(1)
 
   //returns an alert that shows the new points after a round has ended
   def getPointsAlert: Alert =
@@ -152,7 +159,10 @@ class GameScene(val game: Game, val stage: JFXApp3.PrimaryStage, val stackPane: 
   //val playerPileGroup = Group(playerPile) //has to be in a group to be aligned
   val enemyPile = HBox()
   //val enemyPileGroup = Group(enemyPile)//has to be in a group to be aligned
-
+  val playerNameBox = new HBox():
+    alignment = Pos.BottomLeft
+  val enemyNameBox = new HBox():
+    alignment = Pos.TopLeft
   val deckPile = HBox()
   //val deckPileGroup = Group(deckPile)//has to be in a group to be aligned
 
@@ -160,13 +170,27 @@ class GameScene(val game: Game, val stage: JFXApp3.PrimaryStage, val stackPane: 
   val tableCards = scala.collection.mutable.Buffer[ToggleButton]() //used to store cards on the table
   val cardGroup = ToggleGroup() //togglegroup for cards in hand, so only one can be selected at a time
 
-  
+
   //updates the screen as necessary
   def update(): Unit =
     this.game.currentPlayer match
-      case ai: AIPlayer => //if the current player is AI, we don't want to swap the view to appear as we are playing as AI
+      case ai: AIPlayer =>
+        this.game.nextHumanPlayer match
+          case Some(player: Player) =>
+
+            //update hand to show the hand of the next human player
+            handCards.clear()
+            for card <- player.hand do
+              val button = getHandButton(card, cardGroup)
+              handCards += button
+            bottomBox.children = handCards
+            //updates the count of how many cards are in the next human players pile
+            playerPile.children = Array(getDeckImage, getCountLabel(40, player.pile.size))
+            playerNameBox.children = Array(getTextLabel(player.name, 20))
+
+          case _ =>
       case noAI =>
-        
+
         //empty the hand and update it to be either the hand with played card removed and drawn card added
         //or be the hand of the next human player
         handCards.clear()
@@ -176,15 +200,34 @@ class GameScene(val game: Game, val stage: JFXApp3.PrimaryStage, val stackPane: 
         bottomBox.children = handCards
         //updates the count of how many cards are in the current players pile
         playerPile.children = Array(getDeckImage, getCountLabel(40, this.game.currentPlayer.pile.size))
-        
-        //empty enemy player's cards and update it so that it has the correct number of cards showing
-        topBox.children.clear() 
-        for i <- game.nextPlayer.hand.indices do
-          topBox.children += getBackCard
-          
-        //update count of enemy players pile size
-        enemyPile.children = Array(getDeckImage, getCountLabel(40, this.game.nextPlayer.pile.size))
 
+        playerNameBox.children = Array(getTextLabel(game.currentPlayer.name, 20))
+
+    //find the player that should be displayed at the top of the screen. if the current player is AI and next human is
+    //the next player, dont show next player at top, since they are shown at the bottom already.
+    //therefore find the next AI player, and if something goes wrong just return next player
+    val topPlayer = game.nextHumanPlayer match
+      case Some(player) if player != game.nextPlayer =>
+        game.nextPlayer
+
+      case Some(player) =>
+        game.nextAIPlayer match
+        case Some(ai) =>
+          ai
+        case _ =>
+          game.nextPlayer
+
+      case _ =>
+        game.nextPlayer
+
+    //empty enemy player's cards and update it so that it has the correct number of cards showing
+    topBox.children.clear()
+    for i <- topPlayer.hand.indices do
+      topBox.children += getBackCard
+
+    //update count of enemy players pile size
+    enemyPile.children = Array(getDeckImage, getCountLabel(40, topPlayer.pile.size))
+    enemyNameBox.children = Array(getTextLabel(topPlayer.name, 20))
     //update the cards on the table, should be updated regardless of if the currentplayer is AI or human.
     tableCards.clear()
     for card <- game.table do
@@ -193,6 +236,16 @@ class GameScene(val game: Game, val stage: JFXApp3.PrimaryStage, val stackPane: 
     middleBox.children = tableCards
     middleBox.setTranslateX(0) //reset scroll
     deckPile.children = Array(getDeckImage, getCountLabel(40, this.game.deck.cardsLeft))
+
+  //if current player is AI, make it play move
+  def ifAIThenPlayMove(): Unit =
+    this.game.currentPlayer match
+      case ai: AIPlayer => //if current player is bot, make it play a move right away
+        val (playedCard, chosenCards) = ai.AIPlayMove()
+        this.getPlayMoveAlert(ai, playedCard, chosenCards).showAndWait() //show what move the bot played in an alert
+        this.startNewTurn() //call this method again to start a new turn, this will basically loop until player is not bot
+
+      case _ => //if normal player, don't do anything else
 
   //starts a new turn and updates the screen accordingly, used in the buttons that player uses to make moves.
   def startNewTurn(): Unit =
@@ -204,13 +257,7 @@ class GameScene(val game: Game, val stage: JFXApp3.PrimaryStage, val stackPane: 
         println("It's over!") //temp
 
     this.update() //update the screen, wont update hand cards and enemy cards if player is AI
-    this.game.currentPlayer match
-      case ai: AIPlayer => //if current player is bot, make it play a move right away
-        val (playedCard, chosenCards) = ai.AIPlayMove()
-        this.getPlayMoveAlert(ai, playedCard, chosenCards).showAndWait() //show what move the bot played in an alert
-        this.startNewTurn() //call this method again to start a new turn, this will basically loop until player is not bot
-
-      case _ => //if normal player, don't do anything else
+    this.ifAIThenPlayMove()
 
   //on scroll event so that player can scroll the cards on the table. in case there are too many cards to show on screen
   grid.setOnScroll(event =>
@@ -224,6 +271,8 @@ class GameScene(val game: Game, val stage: JFXApp3.PrimaryStage, val stackPane: 
   grid.add(playerPile, 2, 3)
   grid.add(deckPile, 2, 1)
   grid.add(enemyPile, 2, 0)
+  grid.add(playerNameBox, 0, 3)
+  grid.add(enemyNameBox, 0, 0)
 
 
   val row0 = new RowConstraints:
@@ -283,12 +332,15 @@ class GameScene(val game: Game, val stage: JFXApp3.PrimaryStage, val stackPane: 
   topBox.setSpacing(5)
   topBox.setPadding(Insets(5))
 
+  def getSelectedButton(buttons: scala.collection.mutable.Buffer[ToggleButton]): Option[ToggleButton] =
+    buttons.find( x => x.isSelected )
+
 //button used to play a move
   val playMoveButton = new Button("Play move"):
     onAction = event =>
 
       //get the card that player has chosen in their hand
-      val playedCard = handCards.find( button => button.isSelected ).flatMap( x => Some(x.userData) )
+      val playedCard = getSelectedButton(handCards).flatMap( x => Some(x.userData) )
       //get the cards that player chose from the table
       val chosenCards: Set[Card] = Set[Card]() ++ tableCards.filter(button => button.isSelected).toSet.map( btn => btn.userData ).map{
         case card: Card => card
@@ -310,7 +362,7 @@ class GameScene(val game: Game, val stage: JFXApp3.PrimaryStage, val stackPane: 
   val addToTableButton = new Button("Put on table"):
     onAction = event =>
       //find card chosen in players hand
-      val chosenCard = handCards.find( button => button.isSelected ).flatMap( x => Some(x.userData) )
+      val chosenCard = getSelectedButton(handCards).flatMap( x => Some(x.userData) )
       //check if player chose a card
       chosenCard match
         case Some(card: Card) =>
@@ -323,4 +375,6 @@ class GameScene(val game: Game, val stage: JFXApp3.PrimaryStage, val stackPane: 
 
   buttonBox.children += playMoveButton
   buttonBox.children += addToTableButton
+  stage.width = stage.getWidth - 1
   update()
+  //this.ifAIThenPlayMove() //if first player is AI, this needs to be ran

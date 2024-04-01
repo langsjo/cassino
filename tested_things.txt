@@ -3,13 +3,22 @@ Bot scoring tested overall - works
 Bot choosing move when no legal moves (other than putting card on table) - works
 Bot choosing move with less than 4 legal moves - works
 Bots choose moves based on their difficulty - works
-
 Combination finding with no cards on table - works
 Combination finding overall - works
-
 Making illegal moves doesn't let you - works
 Putting card on table without selecting card doesn't let you - works
-
 Tested round ending/new one starting - works
 Tested point alert - works
 Tested alert for when bot makes a move - works
+getPlayerNumber returns lowest untaken number - works
+point calculation - works
+Too few players - works
+No human players - works
+Illegal name (empty or taken) - works
+Text formatter - works
+deck amount scaling - works
+adding and removing players works properly - works
+edit menu shows correct - works
+player at top of screen and player at bottom of screen wont be the same if current player is AI - works
+
+Switching scenes - buggy but works with workarounds (resizing window)

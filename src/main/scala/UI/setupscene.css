@@ -1,0 +1,14 @@
+.toggle-button {
+    -fx-background-color: transparent;
+}
+
+.toggle-button:selected {
+    -fx-background-color: rgb(50, 151, 253);
+}
+
+.scroll-pane {
+    -fx-background: transparent;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-unfocus-color: transparent;
+}

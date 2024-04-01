@@ -20,5 +20,14 @@ tallennus, menu ja pisteiden näyttäminen sekä pelin voittajan määrittämine
 siirrä eri skenet omaan objektiin
 
 27.3-???
+Lisätty main menu ja pelin asetusmenu (eli pelaajien lisääminen/poistaminen/muokkaaminen). Peli toimii menusta asti peliin hyvin,
+pieniä ongelmia scene vaihdon kanssa. Vielä tarvitsee endscreenin ja tallennussysteemin.
+
 
 Mitä tehdä tasapelissä?
+Paras tapa antaa Scenelle parent kun käyttää extends?
+Miten saada separaattorit hyvin
+scene vaihto bugaa
+menussa jutut ei liiku kun muuttaa kokoa (liittyköhän edelliseen?)
+game scene ei päivitä ollenkaan, kunnes ensimmäinen ei botti tulee vuoroon (botit pelaa kun GameScene initialisoituu, joten
+scene ei ehdi päivittyä stageen)
