@@ -17,7 +17,7 @@ import scalafx.scene.text.{Font, FontWeight}
 import scala.collection.mutable.Set
 import java.io.FileInputStream
 
-class GameView(val game: Game, val roott: StackPane = StackPane()) extends Scene(parent = roott):
+class GameScene(val game: Game, val stage: JFXApp3.PrimaryStage, val stackPane: StackPane = StackPane()) extends Scene(parent = stackPane):
 
   //returns a button with the image of a card on it that can be toggled on/off
   //button is used for the cards on the table, that the player can select to take in a move
@@ -96,7 +96,6 @@ class GameView(val game: Game, val roott: StackPane = StackPane()) extends Scene
   //returns an alert for an AIPlayer playing a move
   def getPlayMoveAlert(player: Player, playedCard: Card, chosenCards: Set[Card]): Alert =
     new Alert(AlertType.Information):
-      initOwner(super.owner)
 
       headerText = ""
       val cardHeight = 100
@@ -127,7 +126,7 @@ class GameView(val game: Game, val roott: StackPane = StackPane()) extends Scene
   //returns an alert that shows the new points after a round has ended
   def getPointsAlert: Alert =
     new Alert(AlertType.Information):
-      initOwner(super.owner)
+      initOwner(stage)
       headerText = ""
       title = "Round has ended! Here are the new points."
 
@@ -150,12 +149,12 @@ class GameView(val game: Game, val roott: StackPane = StackPane()) extends Scene
   val buttonBox = HBox()
   val topBox = HBox()
   val playerPile = HBox()
-  val playerPileGroup = Group(playerPile) //has to be in a group to be aligned
+  //val playerPileGroup = Group(playerPile) //has to be in a group to be aligned
   val enemyPile = HBox()
-  val enemyPileGroup = Group(enemyPile)//has to be in a group to be aligned
+  //val enemyPileGroup = Group(enemyPile)//has to be in a group to be aligned
 
   val deckPile = HBox()
-  val deckPileGroup = Group(deckPile)//has to be in a group to be aligned
+  //val deckPileGroup = Group(deckPile)//has to be in a group to be aligned
 
   val handCards = scala.collection.mutable.Buffer[ToggleButton]() //used to store cards in players hand
   val tableCards = scala.collection.mutable.Buffer[ToggleButton]() //used to store cards on the table
@@ -192,6 +191,7 @@ class GameView(val game: Game, val roott: StackPane = StackPane()) extends Scene
       val button = getTableButton(card)
       tableCards += button
     middleBox.children = tableCards
+    middleBox.setTranslateX(0) //reset scroll
     deckPile.children = Array(getDeckImage, getCountLabel(40, this.game.deck.cardsLeft))
 
   //starts a new turn and updates the screen accordingly, used in the buttons that player uses to make moves.
@@ -216,11 +216,14 @@ class GameView(val game: Game, val roott: StackPane = StackPane()) extends Scene
   grid.setOnScroll(event =>
     middleBox.setTranslateX(clampX(middleBox.getTranslateX + event.getDeltaY, tableCards.size * -50, tableCards.size * 50)) )
 
-  roott.children = Array(grid, playerPileGroup, deckPileGroup, enemyPileGroup)
-  grid.add(bottomBox, 0, 3)
-  grid.add(buttonBox, 0, 2)
-  grid.add(middleBox, 0, 1)
-  grid.add(topBox, 0, 0)
+  stackPane.children = Array(grid)
+  grid.add(bottomBox, 1, 3)
+  grid.add(buttonBox, 1, 2)
+  grid.add(middleBox, 1, 1)
+  grid.add(topBox, 1, 0)
+  grid.add(playerPile, 2, 3)
+  grid.add(deckPile, 2, 1)
+  grid.add(enemyPile, 2, 0)
 
 
   val row0 = new RowConstraints:
@@ -232,9 +235,13 @@ class GameView(val game: Game, val roott: StackPane = StackPane()) extends Scene
   val row3 = new RowConstraints:
     percentHeight = 33
   val column0 = new ColumnConstraints:
-    percentWidth = 100
+    percentWidth = 22
+  val column1 = new ColumnConstraints:
+    percentWidth = 56
+  val column2 = new ColumnConstraints:
+    percentWidth = 22
   grid.rowConstraints = Array(row0, row1, row2, row3)
-  grid.columnConstraints = Array(column0)
+  grid.columnConstraints = Array(column0, column1, column2)
   
   //bunch of setting alignments and padding etc.
   bottomBox.setAlignment(Pos.BottomCenter)
@@ -242,25 +249,25 @@ class GameView(val game: Game, val roott: StackPane = StackPane()) extends Scene
   middleBox.setAlignment(Pos.BottomCenter)
   topBox.setAlignment(Pos.TopCenter)
 
-  playerPileGroup.alignmentInParent = Pos.BottomRight
-  playerPile.setPadding(Insets(10))
-  playerPile.setAlignment(Pos.BottomRight)
-  playerPile.setMaxWidth(200)
-  playerPile.setMaxHeight(100)
+//  playerPileGroup.alignmentInParent = Pos.BottomRight
+  playerPile.setPadding(Insets(0, 3, 5, 0))
+  playerPile.setAlignment(Pos.BottomLeft)
+  //playerPile.setMaxWidth(200)
+  //playerPile.setMaxHeight(100)
 
-  deckPileGroup.alignmentInParent = Pos.CenterRight
-  deckPile.setPadding(Insets(10))
-  deckPile.setAlignment(Pos.BottomRight)
-  deckPile.setMaxWidth(200)
-  deckPile.setMaxHeight(100)
+ // deckPileGroup.alignmentInParent = Pos.CenterRight
+  deckPile.setPadding(Insets(0, 3, 6, 5))
+  deckPile.setAlignment(Pos.BottomLeft)
+  //deckPile.setMaxWidth(200)
+  //deckPile.setMaxHeight(100)
   deckPile.setBackground(Background.fill(joo.CasinoGreen))
-  deckPileGroup.setTranslateY(10)
+  //deckPileGroup.setTranslateY(10)
 
-  enemyPileGroup.alignmentInParent = Pos.TopRight
-  enemyPile.setPadding(Insets(10))
-  enemyPile.setAlignment(Pos.BottomRight)
-  enemyPile.setMaxWidth(200)
-  enemyPile.setMaxHeight(100)
+  //enemyPileGroup.alignmentInParent = Pos.TopRight
+  enemyPile.setPadding(Insets(5, 3, 0, 0))
+  enemyPile.setAlignment(Pos.TopLeft)
+  //enemyPile.setMaxWidth(200)
+  //enemyPile.setMaxHeight(100)
 
   bottomBox.background = Background.fill(joo.CasinoGreen)
   buttonBox.background = Background.fill(joo.CasinoGreen)
@@ -276,10 +283,10 @@ class GameView(val game: Game, val roott: StackPane = StackPane()) extends Scene
   topBox.setSpacing(5)
   topBox.setPadding(Insets(5))
 
-
 //button used to play a move
   val playMoveButton = new Button("Play move"):
     onAction = event =>
+
       //get the card that player has chosen in their hand
       val playedCard = handCards.find( button => button.isSelected ).flatMap( x => Some(x.userData) )
       //get the cards that player chose from the table
