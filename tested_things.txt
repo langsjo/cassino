@@ -20,5 +20,9 @@ deck amount scaling - works
 adding and removing players works properly - works
 edit menu shows correct - works
 player at top of screen and player at bottom of screen wont be the same if current player is AI - works
+saving - works
+loading with correctly formatted save file - works
+loads correct game situation - works
+
 
 Switching scenes - buggy but works with workarounds (resizing window)

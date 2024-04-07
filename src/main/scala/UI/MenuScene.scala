@@ -1,6 +1,6 @@
 package UI
 
-import joo.{AIPlayer, Card, Game, Player, Suit}
+import joo.{AIPlayer, Card, Game, GameLoader, Player, Suit}
 import scalafx.application.JFXApp3
 import scalafx.geometry.{Insets, Pos}
 import scalafx.scene.{Group, Node, Scene}
@@ -13,9 +13,11 @@ import scalafx.scene.paint.Color
 import scalafx.scene.shape.Rectangle
 import scalafx.scene.paint.Color.*
 import scalafx.scene.text.{Font, FontWeight}
+import scalafx.stage.FileChooser
+import scalafx.stage.FileChooser.ExtensionFilter
 
 import scala.collection.mutable.Set
-import java.io.FileInputStream
+import java.io.{File, FileInputStream}
 
 object Menu:
 
@@ -48,10 +50,33 @@ object Menu:
     padding = Insets(-5)
   grid.add(playButton, 0, 1)
 
+  def chooseFile(): Option[File] =
+    val fileChooser = FileChooser()
+    fileChooser.getExtensionFilters.add(new ExtensionFilter("Text Files", "*.txt"))
+    fileChooser.initialDirectory = new File("./saves/")
+    val chosenFile = fileChooser.showOpenDialog(stage)
+    Option(chosenFile)
+
   val loadButton = new Button(): //button to load save
     alignmentInParent = Pos.Center
     graphic = new ImageView(Image(FileInputStream("./assets/loadbutton.png")))
     padding = Insets(-5)
+
+    onAction = event =>
+      val chosenFile = chooseFile()
+      chosenFile match
+        case Some(file) =>
+          val loadedGame = GameLoader.load(file)
+          loadedGame match
+            case Some(game) =>
+              val newScene = GameScene(game, stage)
+              stage.setScene(newScene)
+              newScene.ifAIThenPlayMove()
+            case _ => // TODO some feedback
+
+        case _ =>
+
+
   grid.add(loadButton, 0, 2)
 
 

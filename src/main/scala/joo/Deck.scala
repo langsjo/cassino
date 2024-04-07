@@ -33,6 +33,12 @@ class Deck(val numberOfDecks: Int):
       None
   
   def cardsLeft: Int = this.cards.size
+
+  def setCards[C[Card] <: Seq[Card]](cards: C[Card]): Unit =
+    this.cards.clear()
+    this.cards ++= cards
+
+  def getCards: Stack[Card] = this.cards
   
   //Represents the deck as a string
   override def toString: String =
@@ -44,7 +50,6 @@ class Deck(val numberOfDecks: Int):
 
   //Returns the next card but does not remove it from the deck
   def next = this.cards.head
-
 
 @main def test() =
   val a = Deck(1)
