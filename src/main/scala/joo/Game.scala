@@ -1,7 +1,7 @@
 package joo
 import scala.collection.mutable.{Buffer, Set, Map}
 
-class Game(deckCount: Int):
+class Game(val deckCount: Int):
   val players = Buffer[Player]()
   val deck = Deck(deckCount)
   var dealerCount = 1

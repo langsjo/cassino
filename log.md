@@ -28,6 +28,7 @@ Mitä tehdä tasapelissä?
 Paras tapa antaa Scenelle parent kun käyttää extends?
 Miten saada separaattorit hyvin
 scene vaihto bugaa
-menussa jutut ei liiku kun muuttaa kokoa (liittyköhän edelliseen?)
-game scene ei päivitä ollenkaan, kunnes ensimmäinen ei botti tulee vuoroon (botit pelaa kun GameScene initialisoituu, joten
-scene ei ehdi päivittyä stageen)
+menussa jutut ei liiku kun muuttaa kokoa
+initialFileName ei toimi
+
+kuinka tarkka pitää olla tiedoston lataamisessa?

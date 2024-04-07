@@ -1,23 +1,26 @@
 package UI
 
-import joo.{AIPlayer, Card, Game, Player, Suit}
+import joo.{AIPlayer, Card, Game, GameLoader, GameSaver, Player, Suit}
 import scalafx.application.JFXApp3
 import scalafx.geometry.{Insets, Pos}
 import scalafx.scene.{Group, Node, Scene}
 import scalafx.scene.canvas.Canvas
 import scalafx.scene.control.Alert.AlertType
-import scalafx.scene.control.{Alert, Button, Label, RadioButton, ToggleButton, ToggleGroup, Tooltip}
+import scalafx.scene.control.{Alert, Button, ButtonType, Label, RadioButton, ToggleButton, ToggleGroup, Tooltip}
 import scalafx.scene.image.{Image, ImageView}
+import scalafx.scene.input.KeyCode
 import scalafx.scene.layout.{Background, Border, BorderImage, BorderStroke, BorderStrokeStyle, BorderWidths, ColumnConstraints, CornerRadii, GridPane, HBox, Pane, Priority, Region, RowConstraints, StackPane, VBox}
 import scalafx.scene.paint.Color
 import scalafx.scene.shape.Rectangle
 import scalafx.scene.paint.Color.*
 import scalafx.scene.text.{Font, FontWeight}
+import scalafx.stage.FileChooser.ExtensionFilter
+import scalafx.stage.{DirectoryChooser, FileChooser}
 
 import scala.collection.mutable.Set
-import java.io.FileInputStream
+import java.io.{File, FileInputStream}
 
-class GameScene(val game: Game, val stage: JFXApp3.PrimaryStage, val stackPane: StackPane = StackPane()) extends Scene(parent = stackPane):
+class GameScene(val game: Game, val stage: JFXApp3.PrimaryStage, val grid: GridPane = GridPane()) extends Scene(parent = grid):
 
   //returns a button with the image of a card on it that can be toggled on/off
   //button is used for the cards on the table, that the player can select to take in a move
@@ -147,10 +150,48 @@ class GameScene(val game: Game, val stage: JFXApp3.PrimaryStage, val stackPane: 
       points.children = content
       graphic = points
 
+  val saveButton = ButtonType("Save")
+  val returnMenuButton = ButtonType("Return to menu")
+  //function to make user choose file to save to
+  def chooseFile(): Option[File] =
+    val fileChooser = FileChooser()
+    fileChooser.getExtensionFilters.add(new ExtensionFilter("Text Files", "*.txt"))
+    fileChooser.initialDirectory = new File("./saves/")
+    fileChooser.setInitialFileName("CassinoSave.txt") // doesnt work :(
+    val chosenFile = fileChooser.showOpenDialog(stage)
+    Option(chosenFile)
+
+  //function that returns alert when esc pressed
+  def getEscAlert: Alert =
+    new Alert(AlertType.Confirmation):
+      initOwner(stage)
+      title = "Paused"
+      headerText = "Do you wish to save or return to menu?"
+      buttonTypes = Array(saveButton, returnMenuButton, ButtonType.Cancel)
+
+  //check if esc pressed, if so bring menu and initiate save if that is chosen
+  grid.onKeyPressed = event =>
+    if event.getCode.toString == "ESCAPE" then
+      val result = getEscAlert.showAndWait()
+      val chosenFile: Option[File] = result match
+        case Some(btn) if btn == saveButton =>
+          chooseFile()
+        case Some(btn) if btn == returnMenuButton =>
+          stage.setScene(Menu.scene)
+          stage.width = stage.getWidth + 1
+          None
+        case _ =>
+          None
+
+      chosenFile match
+        case Some(file) =>
+          GameSaver.save(game, file)
+          GameLoader.load(file)
+        case _ =>
+
   //returns Double that is at least minX, at most maxX, otherwise x. used for scrolling the table cards
   def clampX(x: Double, minX: Double, maxX: Double): Double = math.max(math.min(maxX, x), minX)
 
-  val grid = GridPane()
   val bottomBox = HBox()
   val middleBox = HBox()
   val buttonBox = HBox()
@@ -171,42 +212,50 @@ class GameScene(val game: Game, val stage: JFXApp3.PrimaryStage, val stackPane: 
   val cardGroup = ToggleGroup() //togglegroup for cards in hand, so only one can be selected at a time
 
 
+  def updateBottomPlayer(player: Player): Unit =
+    handCards.clear()
+    for card <- player.hand do
+      val button = getHandButton(card, cardGroup)
+      handCards += button
+    bottomBox.children = handCards
+    //updates the count of how many cards are in the next human players pile
+    playerPile.children = Array(getDeckImage, getCountLabel(40, player.pile.size))
+    playerNameBox.children = Array(getTextLabel(player.name, 20))
+
+  def updateTopPlayer(player: Player): Unit =
+    topBox.children.clear()
+    for i <- player.hand.indices do
+      topBox.children += getBackCard
+    //update count of enemy players pile size
+    enemyPile.children = Array(getDeckImage, getCountLabel(40, player.pile.size))
+    enemyNameBox.children = Array(getTextLabel(player.name, 20))
+
+  def updateTable(): Unit =
+    tableCards.clear()
+    for card <- game.table do
+      val button = getTableButton(card)
+      tableCards += button
+    middleBox.children = tableCards
+    middleBox.setTranslateX(0) //reset scroll
+    deckPile.children = Array(getDeckImage, getCountLabel(40, this.game.deck.cardsLeft))
+
   //updates the screen as necessary
   def update(): Unit =
     this.game.currentPlayer match
       case ai: AIPlayer =>
+        updateTopPlayer(ai)
         this.game.nextHumanPlayer match
           case Some(player: Player) =>
-
-            //update hand to show the hand of the next human player
-            handCards.clear()
-            for card <- player.hand do
-              val button = getHandButton(card, cardGroup)
-              handCards += button
-            bottomBox.children = handCards
-            //updates the count of how many cards are in the next human players pile
-            playerPile.children = Array(getDeckImage, getCountLabel(40, player.pile.size))
-            playerNameBox.children = Array(getTextLabel(player.name, 20))
-
+            updateBottomPlayer(player)
           case _ =>
       case noAI =>
-
-        //empty the hand and update it to be either the hand with played card removed and drawn card added
-        //or be the hand of the next human player
-        handCards.clear()
-        for card <- game.currentPlayer.hand do
-          val button = getHandButton(card, cardGroup)
-          handCards += button
-        bottomBox.children = handCards
-        //updates the count of how many cards are in the current players pile
-        playerPile.children = Array(getDeckImage, getCountLabel(40, this.game.currentPlayer.pile.size))
-
-        playerNameBox.children = Array(getTextLabel(game.currentPlayer.name, 20))
+        updateBottomPlayer(game.currentPlayer)
+        updateTopPlayer(game.nextPlayer)
 
     //find the player that should be displayed at the top of the screen. if the current player is AI and next human is
     //the next player, dont show next player at top, since they are shown at the bottom already.
     //therefore find the next AI player, and if something goes wrong just return next player
-    val topPlayer = game.nextHumanPlayer match
+   /* val topPlayer = game.nextHumanPlayer match
       case Some(player) if player != game.nextPlayer =>
         game.nextPlayer
 
@@ -219,23 +268,11 @@ class GameScene(val game: Game, val stage: JFXApp3.PrimaryStage, val stackPane: 
 
       case _ =>
         game.nextPlayer
-
+*/
     //empty enemy player's cards and update it so that it has the correct number of cards showing
-    topBox.children.clear()
-    for i <- topPlayer.hand.indices do
-      topBox.children += getBackCard
 
-    //update count of enemy players pile size
-    enemyPile.children = Array(getDeckImage, getCountLabel(40, topPlayer.pile.size))
-    enemyNameBox.children = Array(getTextLabel(topPlayer.name, 20))
     //update the cards on the table, should be updated regardless of if the currentplayer is AI or human.
-    tableCards.clear()
-    for card <- game.table do
-      val button = getTableButton(card)
-      tableCards += button
-    middleBox.children = tableCards
-    middleBox.setTranslateX(0) //reset scroll
-    deckPile.children = Array(getDeckImage, getCountLabel(40, this.game.deck.cardsLeft))
+    updateTable()
 
   //if current player is AI, make it play move
   def ifAIThenPlayMove(): Unit =
@@ -263,10 +300,9 @@ class GameScene(val game: Game, val stage: JFXApp3.PrimaryStage, val stackPane: 
   grid.setOnScroll(event =>
     middleBox.setTranslateX(clampX(middleBox.getTranslateX + event.getDeltaY, tableCards.size * -50, tableCards.size * 50)) )
 
-  stackPane.children = Array(grid)
   grid.add(bottomBox, 1, 3)
   grid.add(buttonBox, 1, 2)
-  grid.add(middleBox, 1, 1)
+  grid.add(middleBox, 0, 1, 3, 1)
   grid.add(topBox, 1, 0)
   grid.add(playerPile, 2, 3)
   grid.add(deckPile, 2, 1)
@@ -287,6 +323,7 @@ class GameScene(val game: Game, val stage: JFXApp3.PrimaryStage, val stackPane: 
     percentWidth = 22
   val column1 = new ColumnConstraints:
     percentWidth = 56
+    hgrow = Priority.Never
   val column2 = new ColumnConstraints:
     percentWidth = 22
   grid.rowConstraints = Array(row0, row1, row2, row3)
