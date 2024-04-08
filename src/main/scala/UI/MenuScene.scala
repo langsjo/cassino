@@ -1,6 +1,6 @@
 package UI
 
-import joo.{AIPlayer, Card, Game, GameLoader, Player, Suit}
+import joo.{AIPlayer, Card, CorruptedSaveException, Game, GameLoader, Player, Suit, WrongCardException}
 import scalafx.application.JFXApp3
 import scalafx.geometry.{Insets, Pos}
 import scalafx.scene.{Group, Node, Scene}
@@ -57,6 +57,12 @@ object Menu:
     val chosenFile = fileChooser.showOpenDialog(stage)
     Option(chosenFile)
 
+
+  def getSaveErrorAlert(message: String): Alert =
+    new Alert(AlertType.Warning):
+      title = "Error while loading save"
+      headerText = message
+
   val loadButton = new Button(): //button to load save
     alignmentInParent = Pos.Center
     graphic = new ImageView(Image(FileInputStream("./assets/loadbutton.png")))
@@ -66,13 +72,27 @@ object Menu:
       val chosenFile = chooseFile()
       chosenFile match
         case Some(file) =>
-          val loadedGame = GameLoader.load(file)
+          val loadedGame =
+            try
+              GameLoader.load(file)
+            catch
+              case e: CorruptedSaveException =>
+                getSaveErrorAlert(e.getMessage).showAndWait()
+                None
+
+              case e: WrongCardException =>
+                getSaveErrorAlert("Card in save file was written wrong.").showAndWait()
+                None
+
+              case e: IndexOutOfBoundsException =>
+                getSaveErrorAlert("Save is missing data.").showAndWait()
+                None
           loadedGame match
             case Some(game) =>
               val newScene = GameScene(game, stage)
               stage.setScene(newScene)
               newScene.ifAIThenPlayMove()
-            case _ => // TODO some feedback
+            case _ =>
 
         case _ =>
 
