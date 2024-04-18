@@ -7,7 +7,7 @@ object Main extends JFXApp3:
   def start() =
 
     stage = new JFXApp3.PrimaryStage:
-      title = "UniqueProjectName"
+      title = "KasinoPro"
       width = 850
       height = 700
     stage.setMinWidth(stage.getWidth)
