@@ -50,7 +50,3 @@ class Deck(val numberOfDecks: Int):
 
   //Returns the next card but does not remove it from the deck
   def next = this.cards.head
-
-@main def test() =
-  val a = Deck(1)
-  println(a)
