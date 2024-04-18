@@ -1,22 +1,17 @@
 package UI
 
-import joo.{AIPlayer, Card, CorruptedSaveException, Game, GameLoader, Player, Suit, WrongCardException}
-import scalafx.application.JFXApp3
+import joo.{CorruptedSaveException, Game, GameLoader, WrongCardException}
 import scalafx.geometry.{Insets, Pos}
-import scalafx.scene.{Group, Node, Scene}
-import scalafx.scene.canvas.Canvas
+import scalafx.scene.{Node, Scene}
 import scalafx.scene.control.Alert.AlertType
-import scalafx.scene.control.{Alert, Button, Label, RadioButton, ToggleButton, ToggleGroup, Tooltip}
+import scalafx.scene.control.{Alert, Button}
 import scalafx.scene.image.{Image, ImageView}
-import scalafx.scene.layout.{Background, Border, BorderImage, BorderStroke, BorderStrokeStyle, BorderWidths, ColumnConstraints, CornerRadii, GridPane, HBox, Pane, Priority, Region, RowConstraints, StackPane, VBox}
+import scalafx.scene.layout.{Background, GridPane, HBox, RowConstraints}
 import scalafx.scene.paint.Color
-import scalafx.scene.shape.Rectangle
 import scalafx.scene.paint.Color.*
-import scalafx.scene.text.{Font, FontWeight}
 import scalafx.stage.FileChooser
 import scalafx.stage.FileChooser.ExtensionFilter
 
-import scala.collection.mutable.Set
 import java.io.{File, FileInputStream}
 
 object Menu:
@@ -50,6 +45,7 @@ object Menu:
     padding = Insets(-5)
   grid.add(playButton, 0, 1)
 
+  //function to choose file to load
   def chooseFile(): Option[File] =
     val fileChooser = FileChooser()
     fileChooser.getExtensionFilters.add(new ExtensionFilter("Text Files", "*.txt"))
@@ -57,7 +53,7 @@ object Menu:
     val chosenFile = fileChooser.showOpenDialog(stage)
     Option(chosenFile)
 
-
+  //returns alert with info about the error when loading save
   def getSaveErrorAlert(message: String): Alert =
     new Alert(AlertType.Warning):
       title = "Error while loading save"
@@ -75,7 +71,7 @@ object Menu:
           val loadedGame =
             try
               GameLoader.load(file)
-            catch
+            catch //catch errors in game file and show alerts about them
               case e: CorruptedSaveException =>
                 getSaveErrorAlert(e.getMessage).showAndWait()
                 None
@@ -87,16 +83,13 @@ object Menu:
               case e: IndexOutOfBoundsException =>
                 getSaveErrorAlert("Save is missing data.").showAndWait()
                 None
-          loadedGame match
-            case Some(game) =>
+          loadedGame match 
+            case Some(game) => //if a game was succesfully returned from the load method, switch scene to it
               val newScene = GameScene(game, stage)
               stage.setScene(newScene)
               newScene.ifAIThenPlayMove()
-            case _ =>
-
+            case _ => //if there was an error in the file, dont do anything
         case _ =>
-
-
   grid.add(loadButton, 0, 2)
 
 

@@ -1,23 +1,15 @@
 package UI
 
-import joo.{AIPlayer, Card, Game, Player, Suit}
-import scalafx.application.{JFXApp3, Platform}
-import scalafx.geometry.{Insets, Orientation, Pos}
-import scalafx.scene.{Group, Node, Scene}
-import scalafx.scene.canvas.Canvas
+import joo.{AIPlayer, Game, Player}
+import scalafx.application.JFXApp3
+import scalafx.geometry.{Insets, Pos}
+import scalafx.scene.{Node, Scene}
 import scalafx.scene.control.Alert.AlertType
-import scalafx.scene.control.{Alert, Button, ButtonType, Label, RadioButton, ScrollPane, Separator, TextField, ToggleButton, ToggleGroup, Tooltip}
-import scalafx.scene.image.{Image, ImageView}
-import scalafx.scene.input.ScrollEvent
-import scalafx.scene.layout.GridPane.getColumnIndex
-import scalafx.scene.layout.{Background, Border, BorderImage, BorderStroke, BorderStrokeStyle, BorderWidths, ColumnConstraints, CornerRadii, GridPane, HBox, Pane, Priority, Region, RowConstraints, StackPane, VBox}
+import scalafx.scene.control.{Alert, Button, ButtonType, Label, RadioButton, ScrollPane, TextField, ToggleButton, ToggleGroup}
+import scalafx.scene.layout.{Background, ColumnConstraints, GridPane, HBox, RowConstraints, VBox}
 import scalafx.scene.paint.Color
-import scalafx.scene.shape.Rectangle
 import scalafx.scene.paint.Color.*
 import scalafx.scene.text.{Font, FontWeight}
-
-import scala.collection.mutable.Set
-import java.io.FileInputStream
 
 class SetupScene(val stage: JFXApp3.PrimaryStage, val grid: GridPane = GridPane()) extends Scene(parent = grid):
   grid.background = Background.fill(joo.CasinoGreen)
@@ -120,6 +112,7 @@ class SetupScene(val stage: JFXApp3.PrimaryStage, val grid: GridPane = GridPane(
         val playerDifficulty: Option[Int] = getDifficultyFromButton(player)
 
         //buffer for RadioButtons that are used to choose bot difficulty (for later on)
+        //initiated here for scope
         val diffButtons = scala.collection.mutable.Buffer[ToggleButton]()
 
         val nameLabel = new Label("Name:"):
@@ -136,6 +129,8 @@ class SetupScene(val stage: JFXApp3.PrimaryStage, val grid: GridPane = GridPane(
               textFill = White
 
             val diffToggleGroup = new ToggleGroup()
+
+            //buttons used for selecting difficulty of bot. the button that fits the current difficulty is selected by default
             val easyButton = new RadioButton("Easy"):
               toggleGroup = diffToggleGroup
               font = Font.font("Times New Roman", FontWeight.Bold, 30)
@@ -154,6 +149,7 @@ class SetupScene(val stage: JFXApp3.PrimaryStage, val grid: GridPane = GridPane(
               textFill = White
               selected = num == 3
               userData = Some(3)
+
             diffButtons ++= Array(easyButton, mediumButton, hardButton)
             updatePlayerBox.children = Array(nameLabel, nameField, difficultyLabel, easyButton, mediumButton, hardButton)
 
@@ -314,4 +310,5 @@ class SetupScene(val stage: JFXApp3.PrimaryStage, val grid: GridPane = GridPane(
 
   //need to resize window to update scene...
   stage.width = stage.getWidth + 1 //hack
+
 

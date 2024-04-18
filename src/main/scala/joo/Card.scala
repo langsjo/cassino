@@ -30,29 +30,20 @@ case class Card(val suit: Suit, val tableValue: Int):
       case 16 => 2
       case _ => 0
 
-  /*
-  override def equals(other: Any) =
-    other match
-      case c: Card =>
-        this.suit == c.suit && this.tableValue == c.tableValue
-      case _ => 
-        false
-*/
-
+  //returns the representing string of this card
   def toRepr: String =
     val value = this.tableValue match
-      case num if num >= 1 && num <= 9 => num.toString.toCharArray.head
+      case num if num >= 1 && num <= 9 => num.toString.toCharArray.head //toChar of int returns char with ID of that int, not the int as char
       case char if char == 10 => 'T'
       case char if char == 11 => 'J'
       case char if char == 12 => 'Q'
       case char if char == 13 => 'K'
 
-    val suit = this.suit match
+    val suit = this.suit match //is exhaustive
       case x if x == Suit.Heart => 'H'
       case x if x == Suit.Diamond => 'D'
       case x if x == Suit.Spade => 'S'
       case x if x == Suit.Club => 'C'
-
 
     s"$value$suit"
 
