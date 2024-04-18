@@ -13,7 +13,8 @@ object GameLoader:
       val saveTo = Buffer[Card]()
       if cards.head != "NO" then// NO = no cards saved
         for cardRepr <- cards do
-          saveTo += cardReprToCard(cardRepr)
+          val card = cardReprToCard(cardRepr)
+          saveTo += card
       saveTo.toVector
 
   //returns string as int if it is a non-negative int
@@ -61,6 +62,7 @@ object GameLoader:
         val sweeps = playerData(3).toInt //sweeps
 
         val handCards = getCardData(handData)
+        println(handCards.map(x => x.id))
         val pileCards = getCardData(pileData)
 
         val player = difficulty match //check if the difficulty in save is None or (1, 2, 3). If neither of these, throw error.

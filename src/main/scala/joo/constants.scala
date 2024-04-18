@@ -8,3 +8,5 @@ val CasinoGreen = Color.rgb(1, 117, 1)
 val CardScore = 10
 val SpadeScore = 25
 val PointScore = 150
+
+var CardID = 0

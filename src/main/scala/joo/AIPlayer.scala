@@ -10,7 +10,7 @@ class AIPlayer(override val game: Game, override val name: String, val difficult
 
   //plays a move using Player class playMove method or addCardToTable method
   //returns the move played so that the GUI can display it
-  def AIPlayMove(): (Card, Set[Card]) =
+  def AIPlayMove(): (Card, Buffer[Card]) =
     val (playedCard, chosenCards) = this.selectMove
     // if no chosenCards, that means the bot is putting a card on the table.
     if chosenCards.isEmpty then
@@ -25,7 +25,7 @@ class AIPlayer(override val game: Game, override val name: String, val difficult
   // then selects group based on the bot's difficulty, then randomly selects a move from that group.
   // if there are less than 4 possible moves, select move based on match case below
   // if there are no possible moves, select the worst card in the bot's hand and put it on the table.
-  private def selectMove: (Card, Set[Card]) =
+  private def selectMove: (Card, Buffer[Card]) =
     val scoredMoves = this.scoreMoves.sortBy( (x, y) => y ).map( (x, y) => x ).toVector
     //println(scoredMoves)
     if scoredMoves.size >= 4 then
@@ -41,11 +41,11 @@ class AIPlayer(override val game: Game, override val name: String, val difficult
         case 2 if this.difficulty != 3 => scoredMoves(this.difficulty - 1)
         case 2 => scoredMoves(1)
         case 1 => scoredMoves.head
-        case 0 => (this.worstCardInHand, Set[Card]())
+        case 0 => (this.worstCardInHand, Buffer[Card]())
 
   // group moves into 'count' number of relatively even groups.
-  private def groupMoves(list: Vector[(Card, Set[Card])], count: Int): Vector[Vector[(Card, Set[Card])]] =
-    val result = mutable.Buffer[Vector[(Card, Set[Card])]]()
+  private def groupMoves(list: Vector[(Card, Buffer[Card])], count: Int): Vector[Vector[(Card, Buffer[Card])]] =
+    val result = mutable.Buffer[Vector[(Card, Buffer[Card])]]()
     val slices = this.getSlices(list.size, 4)
     for (start, end) <- slices.zip(slices.tail) do
       result += list.slice(start, end)
@@ -68,18 +68,18 @@ class AIPlayer(override val game: Game, override val name: String, val difficult
 
 
   //scores all of the bot's possible moves and returns them in a Buffer as a tuple with the move and its score
-  private def scoreMoves: Buffer[((Card, Set[Card]), Int)] =
-    var scoredMoves = Buffer[((Card, Set[Card]), Int)]()
+  private def scoreMoves: Buffer[((Card, Buffer[Card]), Int)] =
+    var scoredMoves = Buffer[((Card, Buffer[Card]), Int)]()
 
     for (playedCard, chosenCards) <- this.allPossibleMoves do
       for cards <- chosenCards do
-        val score = this.scoreMove(cards + playedCard)
+        val score = this.scoreMove(cards :+ playedCard)
         scoredMoves += (((playedCard, cards), score))
 
     scoredMoves
 
   // scores a whole move by scores of the cards contained in it and whether it will give a sweep
-  private def scoreMove(cards: Set[Card]): Int =
+  private def scoreMove(cards: Buffer[Card]): Int =
     var score = 0
     for card <- cards do
       score += this.scoreCard(card)

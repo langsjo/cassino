@@ -16,6 +16,7 @@ import scalafx.stage.FileChooser
 
 import scala.collection.mutable.Set
 import java.io.{File, FileInputStream}
+import scala.collection.mutable
 
 class GameScene(val game: Game, val stage: JFXApp3.PrimaryStage, val grid: GridPane = GridPane()) extends Scene(parent = grid):
 
@@ -101,7 +102,7 @@ class GameScene(val game: Game, val stage: JFXApp3.PrimaryStage, val grid: GridP
       textFill = White
 
   //returns an alert for an AIPlayer playing a move
-  def getPlayMoveAlert(player: Player, playedCard: Card, chosenCards: Set[Card]): Alert =
+  def getPlayMoveAlert(player: Player, playedCard: Card, chosenCards: mutable.Buffer[Card]): Alert =
     new Alert(AlertType.Information):
 
       headerText = ""
@@ -384,7 +385,7 @@ class GameScene(val game: Game, val stage: JFXApp3.PrimaryStage, val grid: GridP
       //get the card that player has chosen in their hand
       val playedCard = getSelectedButton(handCards).flatMap( x => Some(x.userData) )
       //get the cards that player chose from the table
-      val chosenCards: Set[Card] = Set[Card]() ++ tableCards.filter(button => button.isSelected).toSet.map( btn => btn.userData ).map{
+      val chosenCards: mutable.Buffer[Card] = tableCards.filter(button => button.isSelected).map(btn => btn.userData ).map{
         case card: Card => card
       }
       
@@ -410,9 +411,8 @@ class GameScene(val game: Game, val stage: JFXApp3.PrimaryStage, val grid: GridP
           if game.currentPlayer.addCardToTable(card) then //add card to table, returns true if player has the card
             startNewTurn()
           else // should (technically) never be reached
-            throw IllegalStateException("Sul ei oo sit korttii?!?!?")
+            throw IllegalStateException("Player doesn't have chosen card")
         case _ =>
-          println("You haven't chosen a card!")
 
   buttonBox.children += playMoveButton
   buttonBox.children += addToTableButton

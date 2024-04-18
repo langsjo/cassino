@@ -36,10 +36,12 @@ class Game(val deckCount: Int):
     this.table += card
 
   def takeFromTable(card: Card): Unit =
-    this.table -= card
+    this.table.remove(this.table.indexWhere( x => x.id == card.id ))
 
-  def takeFromTable(cards: Set[Card]): Unit =
-    this.table --= cards
+  def takeFromTable[C <: Seq[Card]](cards: C): Unit =
+    for card <- cards do
+      this.takeFromTable(card)
+
 
   def getTable: String = this.table.mkString(", ")
   
@@ -124,7 +126,7 @@ class Game(val deckCount: Int):
   def endRound(): Unit =
     this.lastCardTaker match
       case Some(player) =>
-        player.addToPile(Set[Card]() ++ this.table)
+        player.addToPile(this.table)
         this.clearTable()
       case None =>
         this.clearTable()

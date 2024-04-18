@@ -3,7 +3,7 @@ package joo
 //Simple card class to represent cards of the deck
 //tableValue represents the value of the card once placed on the table
 //handValue represents the value of the card when in a player's hand
-case class Card(val suit: Suit, val tableValue: Int):
+class Card(val suit: Suit, val tableValue: Int, val id: Int):
   
   val handValue =
     (this.suit, this.tableValue) match //Special cards get their special values
@@ -12,7 +12,16 @@ case class Card(val suit: Suit, val tableValue: Int):
         case (_, 1) => 14 //Aces
         case _ => this.tableValue //Other cards
   
-  
+  override def equals(other: Any): Boolean =
+    other match
+      case card: Card =>
+        card.suit == this.suit && card.tableValue == this.tableValue
+      case _ =>
+        false
+
+  //check if this card is the other card not just in suit and value but is literally the same object
+  def trueEquals(other: Card): Boolean = this.id == other.id
+
   override def toString: String = 
      val name = this.tableValue match
         case 1 => "Ace"
