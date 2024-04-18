@@ -78,17 +78,9 @@ class Player(val game: Game, val name: String):
     this.allPossibleMoves = Map[Card, Buffer[Buffer[Card]]]()
     for card <- this.hand do
       val singleCombos = possibleSingleCombinations(card.handValue, this.game.table)
-      try
-        println(singleCombos.map( x => x.head.id ) )
-      catch
-        case e =>
       val allCombos = combineCombinations(singleCombos, singleCombos)
       if allCombos.nonEmpty then
         this.allPossibleMoves += ((card, allCombos))
-
-    println(this.hand)
-    println(this.allPossibleMoves)
-    println()
 
   override def toString: String = this.name
 

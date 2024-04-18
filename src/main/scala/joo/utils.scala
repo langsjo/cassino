@@ -2,7 +2,7 @@ package joo
 import scala.collection.mutable.{Set, Buffer}
 
 
-def getNewCardId(): Int =
+def getNewCardId(): Int = //gets card ID and increments by one, so that there is something unique to each card
   val returnVal = CardID
   CardID += 1
   returnVal
@@ -36,8 +36,6 @@ def possibleSingleCombinations(playedCardValue: Int, tableCards: Buffer[Card]): 
       if neededCardPossibilities.nonEmpty then
         possibilities ++= neededCardPossibilities.map( x => (x :+ card) )
 
-  //the sort is done so set removes the duplicates that just had the cards in a different order
-  //have to do this weird syntax with adding it to empty set because otherwise duplicates werent being removed..
   possibilities
 
 def isDuplicate(s1: Buffer[Card], s2: Buffer[Card]): Boolean = //check if s1 and s2 have all the same cards
