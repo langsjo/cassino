@@ -1,21 +1,18 @@
 package UI
 
-import joo.{AIPlayer, Card, Game, GameLoader, GameSaver, Player, Suit}
+import joo.{AIPlayer, Card, Game, GameSaver, Player}
 import scalafx.application.JFXApp3
 import scalafx.geometry.{Insets, Pos}
-import scalafx.scene.{Group, Node, Scene}
-import scalafx.scene.canvas.Canvas
+import scalafx.scene.{Node, Scene}
 import scalafx.scene.control.Alert.AlertType
-import scalafx.scene.control.{Alert, Button, ButtonType, Label, RadioButton, ToggleButton, ToggleGroup, Tooltip}
+import scalafx.scene.control.{Alert, Button, ButtonType, Label, ToggleButton, ToggleGroup}
 import scalafx.scene.image.{Image, ImageView}
-import scalafx.scene.input.KeyCode
-import scalafx.scene.layout.{Background, Border, BorderImage, BorderStroke, BorderStrokeStyle, BorderWidths, ColumnConstraints, CornerRadii, GridPane, HBox, Pane, Priority, Region, RowConstraints, StackPane, VBox}
+import scalafx.scene.layout.{Background, ColumnConstraints, GridPane, HBox, Priority, RowConstraints, VBox}
 import scalafx.scene.paint.Color
-import scalafx.scene.shape.Rectangle
 import scalafx.scene.paint.Color.*
 import scalafx.scene.text.{Font, FontWeight}
 import scalafx.stage.FileChooser.ExtensionFilter
-import scalafx.stage.{DirectoryChooser, FileChooser}
+import scalafx.stage.FileChooser
 
 import scala.collection.mutable.Set
 import java.io.{File, FileInputStream}
@@ -157,9 +154,14 @@ class GameScene(val game: Game, val stage: JFXApp3.PrimaryStage, val grid: GridP
     val fileChooser = FileChooser()
     fileChooser.getExtensionFilters.add(new ExtensionFilter("Text Files", "*.txt"))
     fileChooser.initialDirectory = new File("./saves/")
-    fileChooser.setInitialFileName("CassinoSave.txt") // doesnt work :(
-    val chosenFile = fileChooser.showOpenDialog(stage)
+    fileChooser.initialFileName =  "CassinoSave.txt"
+    val chosenFile = fileChooser.showSaveDialog(stage)
     Option(chosenFile)
+
+  //function that sets the stage scene to menu
+  def returnToMenu(): Unit =
+    stage.setScene(Menu.scene)
+    stage.width = stage.getWidth + 1
 
   //function that returns alert when esc pressed
   def getEscAlert: Alert =
@@ -172,21 +174,19 @@ class GameScene(val game: Game, val stage: JFXApp3.PrimaryStage, val grid: GridP
   //check if esc pressed, if so bring menu and initiate save if that is chosen
   grid.onKeyPressed = event =>
     if event.getCode.toString == "ESCAPE" then
-      val result = getEscAlert.showAndWait()
+      val result = getEscAlert.showAndWait() //returns the pressed button
       val chosenFile: Option[File] = result match
         case Some(btn) if btn == saveButton =>
           chooseFile()
         case Some(btn) if btn == returnMenuButton =>
-          stage.setScene(Menu.scene)
-          stage.width = stage.getWidth + 1
+          returnToMenu()
           None
         case _ =>
           None
 
-      chosenFile match
+      chosenFile match //if save chosen and a file is returned, save the game there
         case Some(file) =>
           GameSaver.save(game, file)
-          GameLoader.load(file)
         case _ =>
 
   //returns Double that is at least minX, at most maxX, otherwise x. used for scrolling the table cards
@@ -211,7 +211,7 @@ class GameScene(val game: Game, val stage: JFXApp3.PrimaryStage, val grid: GridP
   val tableCards = scala.collection.mutable.Buffer[ToggleButton]() //used to store cards on the table
   val cardGroup = ToggleGroup() //togglegroup for cards in hand, so only one can be selected at a time
 
-
+ //updates the screen to be appropriate to the information of the current human player
   def updateBottomPlayer(player: Player): Unit =
     handCards.clear()
     for card <- player.hand do
@@ -222,6 +222,7 @@ class GameScene(val game: Game, val stage: JFXApp3.PrimaryStage, val grid: GridP
     playerPile.children = Array(getDeckImage, getCountLabel(40, player.pile.size))
     playerNameBox.children = Array(getTextLabel(player.name, 20))
 
+  //updates the screen to be appropriate for the next player
   def updateTopPlayer(player: Player): Unit =
     topBox.children.clear()
     for i <- player.hand.indices do
@@ -230,6 +231,7 @@ class GameScene(val game: Game, val stage: JFXApp3.PrimaryStage, val grid: GridP
     enemyPile.children = Array(getDeckImage, getCountLabel(40, player.pile.size))
     enemyNameBox.children = Array(getTextLabel(player.name, 20))
 
+  //updates screen with info about cards on table and cards in deck
   def updateTable(): Unit =
     tableCards.clear()
     for card <- game.table do
@@ -242,36 +244,17 @@ class GameScene(val game: Game, val stage: JFXApp3.PrimaryStage, val grid: GridP
   //updates the screen as necessary
   def update(): Unit =
     this.game.currentPlayer match
-      case ai: AIPlayer =>
-        updateTopPlayer(ai)
-        this.game.nextHumanPlayer match
+      case ai: AIPlayer => //if current player is AI, don't show their cards on the bottom of screen
+        updateTopPlayer(ai) //show them at the top
+        this.game.nextHumanPlayer match //check next human player
           case Some(player: Player) =>
-            updateBottomPlayer(player)
-          case _ =>
-      case noAI =>
+            updateBottomPlayer(player) //if a next human is returned, update the bottom of screen to reflect their status
+          case _ => //a next human player should ALWAYS exist, if somehow it doesnt, just dont update bottom (everything works)
+
+      case noAI => //if current player not ai, update bottom and top normally
         updateBottomPlayer(game.currentPlayer)
         updateTopPlayer(game.nextPlayer)
-
-    //find the player that should be displayed at the top of the screen. if the current player is AI and next human is
-    //the next player, dont show next player at top, since they are shown at the bottom already.
-    //therefore find the next AI player, and if something goes wrong just return next player
-   /* val topPlayer = game.nextHumanPlayer match
-      case Some(player) if player != game.nextPlayer =>
-        game.nextPlayer
-
-      case Some(player) =>
-        game.nextAIPlayer match
-        case Some(ai) =>
-          ai
-        case _ =>
-          game.nextPlayer
-
-      case _ =>
-        game.nextPlayer
-*/
-    //empty enemy player's cards and update it so that it has the correct number of cards showing
-
-    //update the cards on the table, should be updated regardless of if the currentplayer is AI or human.
+    //always update table
     updateTable()
 
   //if current player is AI, make it play move
@@ -284,6 +267,20 @@ class GameScene(val game: Game, val stage: JFXApp3.PrimaryStage, val grid: GridP
 
       case _ => //if normal player, don't do anything else
 
+  //returns alert notifying user of the winners
+  def getWinnerAlert: Alert =
+    new Alert(AlertType.Information):
+      initOwner(stage)
+      title = "The game has ended!"
+      val winners = game.getLeadingPlayers
+      headerText =
+        if winners.size == 1 then //if only one winner
+          s"${winners.head} has won the game with ${winners.head.points} points!"
+        else //if more than one winner
+          winners.dropRight(1).mkString(", ") + s" and ${winners.last} have won the game with ${winners.head.points} points!"
+
+      buttonTypes = Array(returnMenuButton)
+
   //starts a new turn and updates the screen accordingly, used in the buttons that player uses to make moves.
   def startNewTurn(): Unit =
     this.game.newTurn() //start new turn in the game
@@ -291,10 +288,12 @@ class GameScene(val game: Game, val stage: JFXApp3.PrimaryStage, val grid: GridP
       this.getPointsAlert.showAndWait()
       this.game.setRoundEndedFalse() //set flag to false
       if this.game.isGameOver then //if game ended (someone got >= 16 points) show alert with winner that returns player to menu
-        println("It's over!") //temp
+        getWinnerAlert.showAndWait()
+        returnToMenu()
 
-    this.update() //update the screen, wont update hand cards and enemy cards if player is AI
-    this.ifAIThenPlayMove()
+    if !this.game.isGameOver then
+      this.update() //update the screen, wont update hand cards and enemy cards if player is AI
+      this.ifAIThenPlayMove()
 
   //on scroll event so that player can scroll the cards on the table. in case there are too many cards to show on screen
   grid.setOnScroll(event =>
@@ -369,8 +368,14 @@ class GameScene(val game: Game, val stage: JFXApp3.PrimaryStage, val grid: GridP
   topBox.setSpacing(5)
   topBox.setPadding(Insets(5))
 
+  //returns the first selected button from a buffer of buttons
   def getSelectedButton(buttons: scala.collection.mutable.Buffer[ToggleButton]): Option[ToggleButton] =
     buttons.find( x => x.isSelected )
+
+  def getIllegalMoveAlert(text: String): Alert =
+    new Alert(AlertType.Warning):
+      title = "Illegal move!"
+      headerText = text
 
 //button used to play a move
   val playMoveButton = new Button("Play move"):
@@ -388,12 +393,11 @@ class GameScene(val game: Game, val stage: JFXApp3.PrimaryStage, val grid: GridP
         case Some(card: Card) =>
           if game.currentPlayer.playMove(card, chosenCards) then //playMove returns true if its a legal move and vice versa
             startNewTurn() //start new turn after making a move
-
-          else
-            println("Illegal move!")
-
-        case _ =>
-          println("You haven't chosen a card!")
+          else //if illegal move, show alert
+            getIllegalMoveAlert("The cards on the table don't add up to the chosen card!").showAndWait()
+        case _ => //if no card in hand selected, show alert
+          getIllegalMoveAlert("You haven't chosen a card from your hand!").showAndWait()
+  //if not, don't do anything
 
 //button used to add a card from the players hand to the table
   val addToTableButton = new Button("Put on table"):

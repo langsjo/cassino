@@ -1,5 +1,5 @@
 package joo
-import scala.collection.mutable.{Buffer, Set}
+import scala.collection.mutable.Set
 
 //Recursive function that returns all possible combinations to sum up to a specific value
 def possibleSingleCombinations(playedCardValue: Int, tableCards: Set[Card]): Set[Set[Card]] =
@@ -51,12 +51,13 @@ def combineCombinations(madeCombos: Set[Set[Card]], originalCombos: Set[Set[Card
 final case class WrongCardException(private val message: String = "Card written wrong.", private val cause: Throwable = None.orNull) extends Exception(message, cause)
 
 
+//returns card matching the repr
 def cardReprToCard(repr: String): Card =
-  if repr.length != 2 then
+  if repr.length != 2 then //all repr are length of 2
     throw WrongCardException()
 
   else
-    val value = repr(0) match
+    val value = repr(0) match //gets the value of card, either a number or T, J, Q, or K (T is 10)
       case num: Char if num.isDigit && num.asDigit >= 1 && num.asDigit <= 9 =>
         num.asDigit
 
@@ -69,6 +70,7 @@ def cardReprToCard(repr: String): Card =
 
       case _ => throw WrongCardException()
 
+    //get suit of card (S, C, H, or D)
     val suit = repr(1) match
       case char: Char =>
         if char == 'S' then Suit.Spade
@@ -82,26 +84,3 @@ def cardReprToCard(repr: String): Card =
         throw WrongCardException()
 
     Card(suit, value)
-
-
-@main def tester(): Unit =
-  /*val a = Deck(1)
-  val hand = Set[Card]()
-  val table = Set[Card]()
-  for i <- 1 to 4 do
-    hand += a.takeCard()
-  //println(Deck)
-  for i <- 1 to 7 do
-    table += a.takeCard()
-  println(hand)
-  println(table)
-  for card <- hand.take(1) do
-    println(possibleSingleCombinations(card.handValue, table))
-  println(combineCombinations(possibleSingleCombinations(hand.head.handValue, table), possibleSingleCombinations(hand.head.handValue, table)))
-  */
-  //val num = '9'
-  //println(num.isDigit && num.toString.toInt >= 1 && num.toString.toInt <= 9)
-  println(cardReprToCard("TH"))
-  println(cardReprToCard("JD"))
-  println(cardReprToCard("QS"))
-  println(cardReprToCard("KC"))

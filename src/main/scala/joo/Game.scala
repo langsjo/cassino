@@ -11,9 +11,10 @@ class Game(val deckCount: Int):
   var lastCardTaker: Option[Player] = None
   var roundEnded: Boolean = false
 
-  
-  def leadingPlayer: Player = this.players.maxBy( x => x.points )
-  
+  //return vector of players that have the most points
+  def getLeadingPlayers: Vector[Player] =
+    this.players.groupBy( x => x.points ).maxBy( (x, y) => x )._2.toVector
+
   //if all players are out of cards, the round is over
   def isRoundOver: Boolean = this.players.count( x => x.hand.nonEmpty ) == 0
 
@@ -48,10 +49,11 @@ class Game(val deckCount: Int):
   def clearTable(): Unit =
     this.table.clear()
 
+  //returns the player who is currently the dealer
   def currentDealer: Player = this.players((this.dealerCount - 1) % this.players.size)
-
+  //returns the player whose turn it is currently
   def currentPlayer: Player = this.players(this.turnCount % this.players.size)
-
+  //returns the player whose turn is next
   def nextPlayer: Player = this.players((this.turnCount + 1) % this.players.size)
 
   //returns vector of all players, starting with the one whose turn it is now and ending with the one
@@ -76,7 +78,7 @@ class Game(val deckCount: Int):
 
   //calculates the points each player should get once the round has ended and returns it in a map, used by addPoints
   private def calculatePoints(): Map[Player, Int] =
-    val addedPoints = Map() ++ this.players.map( x => (x, 0) ).toMap
+    val addedPoints = Map() ++ this.players.map( x => (x, 0) ).toMap //this syntax so its a mutable map
 
     val mostCardsPlayer = this.players.maxBy( x => x.pile.size )
     addedPoints(mostCardsPlayer) += 1
@@ -105,6 +107,7 @@ class Game(val deckCount: Int):
       for player <- this.turnOrder do
         player.drawCard()
 
+  //deals 4 cards to the table at the start of the game
   def addStartingCardsToTable(): Unit =
     for i <- 1 to 4 do
       val card = this.deck.takeCard()

@@ -13,7 +13,7 @@ case object IllegalSymbol extends ValidationError
 def validateText(str: String): Option[ValidationError] =
   str match
     case str if str.length > 18 => Some(TooLong)
-    case str if str contains ";" => Some(IllegalSymbol)
+    case str if (str contains ";") || (str contains "|") => Some(IllegalSymbol)
     case _ => None
 
 // Create the TextFormatter, and add a filter function to it
@@ -36,7 +36,7 @@ def getTextFormatter = new TextFormatter(
         case Some(IllegalSymbol) =>
           val alert = new Alert(AlertType.Information):
             title = "Illegal symbol"
-            headerText = "Name cannot have illegal symbols (;)"
+            headerText = "Name cannot have illegal symbols (; or |)"
           alert.showAndWait()
           null
         case None =>
