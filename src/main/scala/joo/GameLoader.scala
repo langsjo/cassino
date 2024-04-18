@@ -62,7 +62,7 @@ object GameLoader:
         val sweeps = playerData(3).toInt //sweeps
 
         val handCards = getCardData(handData)
-        println(handCards.map(x => x.id))
+        
         val pileCards = getCardData(pileData)
 
         val player = difficulty match //check if the difficulty in save is None or (1, 2, 3). If neither of these, throw error.
