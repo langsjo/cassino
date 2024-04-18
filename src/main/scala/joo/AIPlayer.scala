@@ -103,18 +103,3 @@ class AIPlayer(override val game: Game, override val name: String, val difficult
   private def worstCardInHand: Card =
     //score cards, then take min by their score and then by value in hand. Choose the card with lowest score and hand value.
     this.hand.map( x => (x, this.scoreCard(x)) ).minBy( (x, y) => (y, x.handValue ) )._1
-
-
-
-@main def AItest() =
-  val game = Game(1)
-  val player1 = AIPlayer(game, "Player 1", 1)
-  val player2 = Player(game, "Player 2")
-
-  game.addPlayer(player1)
-  game.addPlayer(player2)
-  game.newRound()
-
-  player1.allPossibleMoves = Map[Card, Set[Set[Card]]]()
-  //println(player1.allPossibleMoves)
-  println()
