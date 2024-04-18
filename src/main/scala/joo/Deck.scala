@@ -20,7 +20,7 @@ class Deck(val numberOfDecks: Int):
         suit <- Vector[Suit](Suit.Spade, Suit.Club, Suit.Heart, Suit.Diamond)
         faceValue <- 1 to 13
       do
-        this.cards.push(Card(suit, faceValue))
+        this.cards.push(Card(suit, faceValue, getNewCardId()))
 
     this.cards = Random.shuffle(this.cards) //Shuffle the cards into a random order
 

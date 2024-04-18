@@ -1,10 +1,16 @@
 package joo
-import scala.collection.mutable.Set
+import scala.collection.mutable.{Set, Buffer}
+
+
+def getNewCardId(): Int =
+  val returnVal = CardID
+  CardID += 1
+  returnVal
 
 //Recursive function that returns all possible combinations to sum up to a specific value
-def possibleSingleCombinations(playedCardValue: Int, tableCards: Set[Card]): Set[Set[Card]] =
+def possibleSingleCombinations(playedCardValue: Int, tableCards: Buffer[Card]): Buffer[Buffer[Card]] =
   //Set used to remove duplicate combinations
-  var possibilities = Set[Set[Card]]()
+  var possibilities = Buffer[Buffer[Card]]()
 
   if tableCards.isEmpty then //if no cards in pool, return the empty set
     return possibilities
@@ -15,12 +21,12 @@ def possibleSingleCombinations(playedCardValue: Int, tableCards: Set[Card]): Set
   for card <- cards do
     //if card on the table has the same value as needed, add just that to the set and loop again
     if card.tableValue == playedCardValue then
-      possibilities = possibilities + Set(card)
+      possibilities += Buffer(card)
 
     else
       val cardsClone = cards.clone()
       //remove the card currently being inspected so it's not passed in recursion
-      cardsClone -= card
+      cardsClone.remove(cardsClone.indexWhere( x => x.id == card.id ))
 
       val neededValue = playedCardValue - card.tableValue //needed value to combine to the required value
       val neededCardPossibilities = possibleSingleCombinations(neededValue, cardsClone) //recursive call to find the combination needed to get neededValue
@@ -28,27 +34,40 @@ def possibleSingleCombinations(playedCardValue: Int, tableCards: Set[Card]): Set
       //if possible combinations were found, add them to possibilities. if the recursive call returned an empty set, no combinations were found and thus don't
       //add anything to possibilities
       if neededCardPossibilities.nonEmpty then
-        possibilities = possibilities ++ neededCardPossibilities.map( x => (x + card) )
+        possibilities ++= neededCardPossibilities.map( x => (x :+ card) )
 
+  //the sort is done so set removes the duplicates that just had the cards in a different order
+  //have to do this weird syntax with adding it to empty set because otherwise duplicates werent being removed..
   possibilities
+
+def isDuplicate(s1: Buffer[Card], s2: Buffer[Card]): Boolean = //check if s1 and s2 have all the same cards
+    s1.size == s2.size && s1.forall( card => s2.contains(card) )
 
 //function to combine combinations of cards that add up to a specific value into all possible combinations of them
 //that have no overlapping cards.
-def combineCombinations(madeCombos: Set[Set[Card]], originalCombos: Set[Set[Card]]): Set[Set[Card]] =
-  def hasOverlap(s1: Set[Card], s2: Set[Card]): Boolean = s1.intersect(s2).nonEmpty //checks if two sets of cards have any overlap, true if so
-  val newCombos = Set[Set[Card]]()
+def combineCombinations(madeCombos: Buffer[Buffer[Card]], originalCombos: Buffer[Buffer[Card]]): Buffer[Buffer[Card]] =
+  def hasOverlap(s1: Buffer[Card], s2: Buffer[Card]): Boolean = //check if s1 and s2 share any card
+    s1.exists(card1 => s2.exists(card2 => card1.trueEquals(card2)))
+
+  var newCombos = Buffer[Buffer[Card]]()
+  def alreadyExists(s1: Buffer[Card]): Boolean = //check if newCombos already has s1
+    newCombos.exists( x => isDuplicate(x, s1) )
 
   for madeCombo <- madeCombos do //loop through already made combos in previous recursions
-    for originalCombo <- originalCombos if originalCombo != madeCombo do //loop through the possible single combinations, and check that they are not the same
-      if !(hasOverlap(madeCombo, originalCombo)) then //if they don't share cards, its a valid combination and is added to the result
-        newCombos += madeCombo ++ originalCombo
+    for originalCombo <- originalCombos do //loop through the possible single combinations
+      if !(hasOverlap(madeCombo, originalCombo)) && !alreadyExists(madeCombo ++ originalCombo) then //if they don't share cards, its a valid combination and is added to the result
+        newCombos += (madeCombo ++ originalCombo)
 
   if newCombos.nonEmpty then //if new combos were made, check if the next recursion can also make more.
-    newCombos ++= combineCombinations(newCombos, originalCombos)
+    newCombos ++ combineCombinations(newCombos, originalCombos)
 
-  newCombos ++ originalCombos //add the original single combinations, Set removes duplicates.
+  else //this is only ran on the last recursion, so originalCombos added only once. toSet to remove dupes
+    newCombos ++ originalCombos.toSet
+
+
 
 final case class WrongCardException(private val message: String = "Card written wrong.", private val cause: Throwable = None.orNull) extends Exception(message, cause)
+
 
 
 //returns card matching the repr
@@ -83,4 +102,4 @@ def cardReprToCard(repr: String): Card =
       case _ =>
         throw WrongCardException()
 
-    Card(suit, value)
+    Card(suit, value, getNewCardId())
