@@ -36,7 +36,7 @@ class SetupScene(val stage: JFXApp3.PrimaryStage, val grid: GridPane = GridPane(
               "-fx-faint-focus-radius: 0px;" +
               "-fx-faint-focus-color: transparent;"
 
-      this.getStylesheets.add(getClass.getResource("setupscene.css").toExternalForm)
+      this.getStylesheets.add(getClass.getResource("/setupscene.css").toExternalForm)
 
   //returns the name of the player without the AI suffix
   def getName(btn: ToggleButton): String =
