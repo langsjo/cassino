@@ -36,7 +36,7 @@ class GameScene(val game: Game, val stage: JFXApp3.PrimaryStage, val grid: GridP
                 "-fx-faint-focus-radius: 0px;" +
                 s"-fx-faint-focus-color: transparent;"
 
-        this.getStylesheets.add(getClass.getResource("gamescene.css").toExternalForm)
+        this.getStylesheets.add(getClass.getResource("/gamescene.css").toExternalForm)
 
   //returns a togglebutton with image of card on it that can be toggled on/off
   //used for the cards in the players hand. has a togglegroup so only one can be selected at a time
@@ -54,7 +54,7 @@ class GameScene(val game: Game, val stage: JFXApp3.PrimaryStage, val grid: GridP
               "-fx-faint-focus-radius: 0px;" +
               "-fx-faint-focus-color: transparent;"
 
-      this.getStylesheets.add(getClass.getResource("gamescene.css").toExternalForm)
+      this.getStylesheets.add(getClass.getResource("/gamescene.css").toExternalForm)
 
   //returns image of the back of a card, used for the cards in enemy players hand
   def getBackCard: ImageView =
