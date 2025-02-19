@@ -42,3 +42,8 @@ bin/
 # general
 *.class
 saves/
+
+# direnv/devenv
+.envrc
+.devenv
+.direnv
