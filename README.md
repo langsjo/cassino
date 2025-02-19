@@ -22,3 +22,5 @@ The project can be ran through sbt with
 sbt run
 ```
 
+## Assets
+The images for the cards were taken from [Yuidust's (now deleted) itch.io page](https://yuidust.itch.io/deck-of-cards)
