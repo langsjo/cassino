@@ -39,19 +39,17 @@
                     xorg.libXxf86vm
                     xorg.libXtst
                     glib.out
-                    alsa-lib
-                    ffmpeg
                     ( sbt.override { jre = jdk17; } )
                   ];
 
-                  enterShell = ''
-                    export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${pkgs.xorg.libXxf86vm}/lib/";
-                    export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${pkgs.libGL}/lib/";
-                    export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${pkgs.glib.out}/lib/";
-                    export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${pkgs.gtk3}/lib/";
-                    export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${pkgs.xorg.libXtst}/lib/";
-                    export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${pkgs.alsa-lib}/lib/";
-                  '';
+                  env.LD_LIBRARY_PATH = pkgs.lib.concatStrings [
+                    ( builtins.getEnv "LD_LIBRARY_PATH" )
+                    ":${pkgs.xorg.libXxf86vm}/lib/"
+                    ":${pkgs.libGL}/lib/"
+                    ":${pkgs.glib.out}/lib/"
+                    ":${pkgs.gtk3}/lib/"
+                    ":${pkgs.xorg.libXtst}/lib/"
+                  ];
                 }
               ];
             };
